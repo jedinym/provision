@@ -23,12 +23,6 @@ na metody validace geometrie struktur.
 Vytvořit API a zdokumentovat jej Porovnat výstupy z lokálního validačního
 serveru s výstupem z validačního serveru PDB a provést analýzu rozdílů.
 
-* Definitions
-** Z-score
-The difference between an observed value an expected or average value, divided
-by the standard deviations of the latter.
-
-
 * Future workplan
 ** Request queuing (HAProxy?)
 ** Py library that adapts Dangle, Reduce, Probe
@@ -120,14 +114,3 @@ Is a composite of other tools. Provides a CLI interface that can be used.
 
 ** PDB-REDO/density-fitness
 https://github.com/PDB-REDO/density-fitness
-
-** Maxit
-[[https://sw-tools.rcsb.org/apps/MAXIT/][MAXIT]] assists in the processing and curation of macromolecular structure data. MAXIT can:
-
-+ Read and write PDB and mmCIF format files, and translate between file formats.
-+ Perform consistency checks on coordinates, sequence, and crystal data.
-+ Automatically construct, transform, and merge information between formats
-+ Align residue numbering in the coordinates with the sequence
-+ Reorder and rename atoms in standard and nonstandard residues and ligands according to the Chemical Component Dictionary
-+ Assign ligands the same chain IDs as the adjacent polymers
-+ Detect missing or additional atoms
