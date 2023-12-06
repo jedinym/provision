@@ -1,8 +1,11 @@
 IMAGE_NAME = provision
 ENGINE = docker
 
-.PHONY: all
-all: $(IMAGE_NAME)
+ENDPOINT_SRC = ./src/endpoint/
+
+.PHONY: proto
+proto:
+	protoc -I . --python_betterproto_out=src/ src/endpoint/endpoint.proto
 
 .PHONY: provision
 $(IMAGE_NAME): $(IMAGE_NAME)/Containerfile
