@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package endpoint;
+
+message ValidationRequest {
+    int32 test = 1;
+}
+
+message RequestID {
+    int32 id = 1;
+}
+
+service ValidationEndpoint {
+    rpc Validate(ValidationRequest) returns (RequestID) {}
+}
