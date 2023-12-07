@@ -8,7 +8,8 @@ from loguru import logger
 
 PORT = int(os.environ.get("ENDPOINT_PORT", 5000))
 
-async def main():
+
+async def _main():
     server = Server([EndpointService()])
     with graceful_exit([server]):
         await server.start("127.0.0.1", PORT)
@@ -16,5 +17,6 @@ async def main():
         await server.wait_closed()
         logger.info("Server shutdown")
 
-if __name__ == '__main__':
-    asyncio.run(main())
+
+def main():
+    asyncio.run(_main())

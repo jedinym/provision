@@ -8,3 +8,6 @@ dependencies = [
     "betterproto[compiler] == 2.0.0b6",
     "loguru",
 ]
+
+[tool.pdm.scripts]
+endpoint = {call = "endpoint.main:main"}
