@@ -5,6 +5,7 @@ requires-python = ">= 3.11.6"
 dependencies = [
     "grpcio-tools",
     "betterproto[compiler] == 2.0.0b6",
+    "loguru",
 ]
 
 [project.optional-dependencies]
