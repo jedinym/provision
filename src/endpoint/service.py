@@ -1,8 +1,5 @@
-from asyncio import sleep
-import grpclib
-
-from endpoint import ValidationEndpointBase, ValidationRequest, RequestId
+from sqcapi import ValidationEndpointBase, ValidateRequest, ValidateResponse
 
 class EndpointService(ValidationEndpointBase):
-    async def validate(self, validation_request: "ValidationRequest") -> "RequestId":
-        pass
+    async def validate(self, validation_request: "ValidateRequest") -> "ValidateResponse":
+        return ValidateResponse(request_id=42)

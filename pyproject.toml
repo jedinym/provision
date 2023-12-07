@@ -3,6 +3,7 @@ name = "sqc"
 version = "2023.0.0"
 requires-python = ">= 3.11.6"
 dependencies = [
+    "sqcapi @ git+ssh://git@github.com/sb-ncbr/sqc-proto.git",
     "grpcio-tools",
     "betterproto[compiler] == 2.0.0b6",
     "loguru",
