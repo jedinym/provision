@@ -1,13 +1,13 @@
-IMAGE_NAME = provision
+IMAGE_NAME = struct-qc
 ENGINE = docker
 
 ENDPOINT_SRC = ./src/endpoint/
 
 .PHONY: proto
 proto:
-	protoc -I . --python_betterproto_out=src/ src/endpoint/endpoint.proto
+	protoc -I . --python_betterproto_out=src/ src/common/endpoint.proto
 
-.PHONY: provision
+.PHONY: $(IMAGE_NAME)
 $(IMAGE_NAME): $(IMAGE_NAME)/Containerfile
 	$(ENGINE) build . -t $@ -f $^
 
