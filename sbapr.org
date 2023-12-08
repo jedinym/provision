@@ -30,10 +30,15 @@ serveru s výstupem z validačního serveru PDB a provést analýzu rozdílů.
 ** Human readable output
 Jinja/Asciidoc/Hugo?
 ** PDB output XML adapter to my output
-** If gRPC, python client?
+** Use GRPc for public facing API
+*** Build a small python client for interacting with the API
+** Look into Mogul acquiring
 
 * Current work
 ** TODO Add molprobity binaries to PATH
+** TODO Create a simple gRPC validation endpoint
+** TODO We need storage for temporary results
+Mongo would be quite simple. Do we need a DB at all?
 
 * Architecture
 ** RabbitMQ for message queuing
@@ -55,14 +60,14 @@ Gets human-readable validation results.
 
 * Discussion points
 ** TODO Testing data
-** TODO gRPC or REST?
-** TODO We need storage for temporary results
-Mongo would be quite simple. Do we need a DB at all?
 
+** DONE gRPC or REST?
 ** DONE Non-standard residues in protein, DNA, RNA chains; Carbohydrates; Ligand geometry; Other polymers
 Are we interested in this too?
 ** DONE Do we also want a database of processed data for easy retrieval?
 
+** TODO Some testing data
+Can I generate this somehow? Do I need to create mmCIF manually?
 
 * References
 ** [[file:papers/validation-of-structures-pdb.pdf][Validation of structures in PDB]]
