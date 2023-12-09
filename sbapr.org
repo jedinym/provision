@@ -24,21 +24,23 @@ Vytvořit API a zdokumentovat jej Porovnat výstupy z lokálního validačního
 serveru s výstupem z validačního serveru PDB a provést analýzu rozdílů.
 
 * Future workplan
-** Request queuing (HAProxy?)
 ** Py library that adapts Dangle, Reduce, Probe?
 ** Machine readable output
 ** Human readable output
 Jinja/Asciidoc/Hugo?
 ** PDB output XML adapter to my output
-** Use GRPc for public facing API
-*** Build a small python client for interacting with the API
-** Look into Mogul acquiring
 
 * Current work
+** TODO Rethink architecture to allow uploading huge files
+DEADLINE: <2023-12-14 Thu>
+** TODO We need storage for temporary results/uploads
+DEADLINE: <2023-12-14 Thu>
+We don't need a DB since we don't need to do any advanced lookup.  A "bucket" of
+sorts might be enough, something like Ceph or SeaweedFS?
+** TODO Create a simple library client for the validate() RPC
+DEADLINE: <2023-12-14 Thu>
+
 ** TODO Add molprobity binaries to PATH
-** TODO Create a simple gRPC validation endpoint
-** TODO We need storage for temporary results
-Mongo would be quite simple. Do we need a DB at all?
 
 * Architecture
 ** RabbitMQ for message queuing
@@ -47,27 +49,12 @@ Probably best to avoid creating own solution for queuing.
 ** gRPC methods
 *** validate(ValidationRequest) -> ValidationRequestID
 Uploads a new mmCIF for validation.
-*** poll(ValidationRequestID) -> Bool
-Polls whether a validation has completed.
 *** get_validation_json(ValidationRequestID) -> ValidationResult
 Gets json validation results.
 *** get_validation_pdf(ValidationRequestID) -> ValidationResultHuman
 Gets human-readable validation results.
 
-** Pipeline
-1. Client sends gRPC validate() request to endpoint
-2. An ID for the validation is created and returned to the user
-
 * Discussion points
-** TODO Testing data
-
-** DONE gRPC or REST?
-** DONE Non-standard residues in protein, DNA, RNA chains; Carbohydrates; Ligand geometry; Other polymers
-Are we interested in this too?
-** DONE Do we also want a database of processed data for easy retrieval?
-
-** TODO Some testing data
-Can I generate this somehow? Do I need to create mmCIF manually?
 
 * References
 ** [[file:papers/validation-of-structures-pdb.pdf][Validation of structures in PDB]]
