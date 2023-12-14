@@ -1,0 +1,48 @@
+#    -*- mode: org -*-
+
+
+Archived entries from file /home/mj/docs/muni/sqc/sbapr.org
+
+
+* DONE We need storage for temporary results/uploads
+DEADLINE: <2023-12-14 Thu>
+:PROPERTIES:
+:ARCHIVE_TIME: 2023-12-14 Thu 14:15
+:ARCHIVE_FILE: ~/docs/muni/sqc/sbapr.org
+:ARCHIVE_OLPATH: Current work
+:ARCHIVE_CATEGORY: sbapr
+:ARCHIVE_TODO: DONE
+:END:
+We don't need a DB since we don't need to do any advanced lookup.  A "bucket" of
+sorts might be enough, something like Ceph/SeaweedFS/MinIO?
+
+For our use case, MinIO is sufficient.
+
+* DONE Rethink architecture to allow uploading huge files
+DEADLINE: <2023-12-14 Thu>
+:PROPERTIES:
+:ARCHIVE_TIME: 2023-12-14 Thu 14:15
+:ARCHIVE_FILE: ~/docs/muni/sqc/sbapr.org
+:ARCHIVE_OLPATH: Current work
+:ARCHIVE_CATEGORY: sbapr
+:ARCHIVE_TODO: DONE
+:END:
+Do we really need to separate the endpoint and the validator as separate
+services? The separate service architecture still seems like the better option.
+** Separation pros/cons
+Pros:
+- The validator service becomes independently horizontally scalable, which allows
+  increased throughput when necessary.
+- There is a separation of concerns and dependencies in the system.
+
+Cons:
+- More frontloaded complexity.
+** Monolith pros/cons
+Pros:
+- A "simpler" architecture (no RabbitMQ, no separate block storage).
+
+Cons:
+- Scaling the validator seems more difficult.
+- We would need multiple processes in a single container to get around python's
+  GIL which could get quite complex.
+
