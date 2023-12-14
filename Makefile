@@ -1,17 +1,9 @@
-IMAGE_NAME = struct-qc
-ENGINE = docker
+.PHONY: endpoint
+endpoint: check-env
+	docker buildx build --ssh default=$$SSH_AUTH_SOCK -f Dockerfile.endpoint -t sqc-endpoint .
 
-ENDPOINT_SRC = ./src/endpoint/
-
-.PHONY: proto
-proto:
-	protoc -I . --python_betterproto_out=src/ src/common/endpoint.proto
-
-.PHONY: $(IMAGE_NAME)
-$(IMAGE_NAME): $(IMAGE_NAME)/Containerfile
-	$(ENGINE) build . -t $@ -f $^
-
-.PHONY: run
-run: $(IMAGE_NAME)
-	$(ENGINE) -it $(IMAGE_NAME) /bin/bash
-
+.PHONY:check-env
+check-env:
+ifndef SSH_AUTH_SOCK
+	$(error SSH_AUTH_SOCK is undefined (is the ssh-agent not running?))
+endif
