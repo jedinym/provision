@@ -20,3 +20,5 @@ class StructRepository:
         if not self.minio.bucket_exists(bucket):
             logger.info(f"Creating bucket {bucket}")
             self.minio.make_bucket(bucket)
+        else:
+            logger.info(f"Bucket {bucket} already exists")

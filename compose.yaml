@@ -7,3 +7,9 @@ services:
       - '9000:9000'
       - '9001:9001'
     entrypoint: ["minio", "server", "/data"]
+  endpoint:
+    build:
+      context: .
+      dockerfile: Dockerfile.endpoint
+      ssh:
+        - default
