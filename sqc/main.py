@@ -4,7 +4,7 @@ from kombu import Connection
 from loguru import logger
 import minio
 
-from sqc.repository import RequestRepo
+from sqc.repository import MinioRepo
 from sqc.validation import Validator
 from sqc.worker import Worker
 
@@ -19,7 +19,7 @@ def main():
         secure=False if local_env else True,
     )
 
-    repo = RequestRepo(minio_conn)
+    repo = MinioRepo(minio_conn)
     validator = Validator(repo)
 
     with Connection("amqp://guest:guest@localhost:5672//") as conn:

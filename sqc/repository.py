@@ -4,7 +4,7 @@ from loguru import logger
 import minio
 
 
-class RequestRepo:
+class MinioRepo:
     def __init__(self, minio: minio.Minio):
         # TODO: set bucket notifications
         self.minio = minio
