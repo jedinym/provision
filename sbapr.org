@@ -34,23 +34,7 @@ Jinja/Asciidoc/Hugo?
 ** TODO Spin up a docker compose with the file system
 ** TODO Try to create the entire system, at least in a mocking version
 ** TODO Figure out the deployment of the system
-
-** TODO Create a simple library client for the validate() RPC
-DEADLINE: <2023-12-14 Thu>
-
 ** TODO Add molprobity binaries to PATH
-
-* Architecture
-** RabbitMQ for message queuing
-Probably best to avoid creating own solution for queuing.
-
-** gRPC methods
-*** validate(ValidationRequest) -> ValidationRequestID
-Uploads a new mmCIF for validation.
-*** get_validation_json(ValidationRequestID) -> ValidationResult
-Gets json validation results.
-*** get_validation_pdf(ValidationRequestID) -> ValidationResultHuman
-Gets human-readable validation results.
 
 * Discussion points
 
