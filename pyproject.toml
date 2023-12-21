@@ -4,11 +4,12 @@ version = "2023.0.0"
 requires-python = ">= 3.11.6"
 dependencies = [
     "loguru",
+    "kombu",
     "minio"
 ]
 
 [tool.pdm.scripts]
-endpoint = {call = "endpoint.main:main"}
+main = {call = "main:main"}
 
 [build-system]
 requires = ["pdm-backend"]
