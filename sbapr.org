@@ -31,8 +31,10 @@ Jinja/Asciidoc/Hugo?
 ** PDB output XML adapter to my output
 
 * Current work
-** TODO Spin up a docker compose with the file system
+** DONE Spin up a docker compose with the file system
 ** TODO Try to create the entire system, at least in a mocking version
+*** TODO Return a result for each validation
+
 ** TODO Figure out the deployment of the system
 ** TODO Add molprobity binaries to PATH
 
