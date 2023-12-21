@@ -4,7 +4,7 @@ from loguru import logger
 from kombu import Connection, Exchange, Queue
 from kombu.mixins import ConsumerMixin
 
-from validation import Validator
+from sqc.validation import Validator
 
 
 class Worker(ConsumerMixin):

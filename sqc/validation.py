@@ -1,5 +1,6 @@
 from loguru import logger
-from repository import RequestRepo
+
+from sqc.repository import RequestRepo
 
 
 class Validator:

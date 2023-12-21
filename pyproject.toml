@@ -9,7 +9,7 @@ dependencies = [
 ]
 
 [tool.pdm.scripts]
-main = {call = "main:main"}
+main = {call = "sqc.main:main"}
 
 [build-system]
 requires = ["pdm-backend"]

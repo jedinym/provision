@@ -44,7 +44,7 @@ RUN --mount=type=ssh \
     python -m pip install pdm && \
     pdm install
 
-COPY src src
+COPY sqc sqc
 
 # exec hack used for proper handling of signals
 CMD exec pdm run main

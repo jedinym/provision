@@ -34,6 +34,9 @@ services:
   sqc:
     build:
       dockerfile: Dockerfile
+    environment:
+      - MINIO_ENDPOINT="minio:9000"
+      - LOCAL_ENV=true
     depends_on:
       minio:
         condition: service_healthy
