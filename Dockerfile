@@ -44,8 +44,7 @@ RUN --mount=type=ssh \
     python -m pip install pdm && \
     pdm install
 
-COPY common common
-COPY endpoint endpoint
+COPY src src
 
 # exec hack used for proper handling of signals
-CMD exec pdm run endpoint
+CMD exec pdm run main

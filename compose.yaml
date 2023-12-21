@@ -13,6 +13,11 @@ services:
       - '9000:9000'
       - '9001:9001'
     entrypoint: ["minio", "server", "/data"]
+    healthcheck:
+      test: mc ready local
+      interval: 5s
+      timeout: 30s
+      retries: 3
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -26,3 +31,9 @@ services:
       interval: 5s
       timeout: 30s
       retries: 3
+  sqc:
+    build:
+      dockerfile: Dockerfile
+    depends_on:
+      minio:
+        condition: service_healthy
