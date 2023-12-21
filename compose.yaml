@@ -4,8 +4,10 @@ services:
     environment:
       - MINIO_CONSOLE_ADDRESS=0.0.0.0:9001
       - MINIO_API_SYNC_EVENTS=on
-      - MINIO_NOTIFY_AMQP_ENABLE=on
-      - MINIO_NOTIFY_AMQP_URL=amqp://guest:guest@rabbitmq:5672
+      - MINIO_NOTIFY_AMQP_ENABLE_PRIMARY=on
+      - MINIO_NOTIFY_AMQP_URL_PRIMARY=amqp://guest:guest@rabbitmq:5672
+      - MINIO_NOTIFY_AMQP_EXCHANGE_PRIMARY=requests
+      - MINIO_NOTIFY_AMQP_EXCHANGE_TYPE_PRIMARY=fanout
     ports:
       - '9000:9000'
       - '9001:9001'
