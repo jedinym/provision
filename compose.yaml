@@ -3,12 +3,23 @@ services:
     image: minio/minio
     environment:
       - MINIO_CONSOLE_ADDRESS=0.0.0.0:9001
+      - MINIO_API_SYNC_EVENTS=on
+      - MINIO_NOTIFY_AMQP_ENABLE=on
+      - MINIO_NOTIFY_AMQP_URL=amqp://guest:guest@rabbitmq:5672
     ports:
       - '9000:9000'
       - '9001:9001'
     entrypoint: ["minio", "server", "/data"]
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
   rabbitmq:
     image: rabbitmq:3.12-management
     ports:
       - '5672:5672'
       - '15672:15672'
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 5s
+      timeout: 30s
+      retries: 3
