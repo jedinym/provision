@@ -1,4 +1,5 @@
 from typing import Any
+from kombu.common import threading
 
 from loguru import logger
 from kombu import Connection, Exchange, Queue
@@ -27,3 +28,9 @@ class Worker(ConsumerMixin):
         request = body["Records"][0]["s3"]["object"]["key"]
         logger.info(f"Got request: {request}")
         self.validator.validate(request)
+
+    @logger.catch
+    def run(self, stop_event: threading.Event, *args, **kwargs):
+        while not stop_event.is_set():
+            with logger.catch():
+                super().run(*args, **kwargs)
