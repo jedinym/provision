@@ -11,19 +11,11 @@ from sqc.repository import MinioRepo
 from sqc.validation import Validator
 from sqc.worker import Worker
 
-stop_event = threading.Event()
+should_stop = False
 
-def handler(signum, _frame):
-    print("COCK!")
-    global stop_event
-    stop_event.set()
-
-
-def start_worker(validator: Validator, stop_event: threading.Event) -> None:
-    with Connection("amqp://guest:guest@localhost:5672//") as conn:
-        worker = Worker(conn, validator)
-        logger.info(f"Starting worker {threading.get_ident()}")
-        worker.run(stop_event)
+def handler(_, __):
+    global should_stop
+    should_stop = True
 
 
 def main():
@@ -44,21 +36,29 @@ def main():
 
     nthreads = 2
     threads: list[threading.Thread] = []
+    workers: list[Worker] = []
 
     for _ in range(nthreads):
-        t = threading.Thread(target=start_worker, args=[validator, stop_event])
+        worker = Worker(validator)
+        workers.append(worker)
+
+        t = threading.Thread(target=worker.run, args=[])
         threads.append(t)
         t.start()
 
+    global should_stop
     while True:
         sleep(1)
         for thread in threads:
             if not thread.is_alive():
-                stop_event.set()
+                should_stop = True
                 logger.error("Worker thread died during execution")
 
-        if stop_event.is_set():
-            print("Stopping")
+        if should_stop:
+            logger.warning("Stopping all workers")
+            for worker in workers:
+                worker.should_stop = True
+
             for thread in threads:
                 thread.join()
 

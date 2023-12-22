@@ -1,5 +1,4 @@
 from typing import Any
-from kombu.common import threading
 
 from loguru import logger
 from kombu import Connection, Exchange, Queue
@@ -11,8 +10,8 @@ from sqc.validation import Validator
 class Worker(ConsumerMixin):
     queue = Queue("requests", Exchange("requests", type="fanout", durable=True), "#")
 
-    def __init__(self, connection: Connection, validator: Validator):
-        self.connection = connection
+    def __init__(self, validator: Validator):
+        self.connection = Connection("amqp://guest:guest@localhost:5672//")
         self.validator = validator
 
     def get_consumers(self, Consumer, _channel):
@@ -29,8 +28,8 @@ class Worker(ConsumerMixin):
         logger.info(f"Got request: {request}")
         self.validator.validate(request)
 
-    @logger.catch
-    def run(self, stop_event: threading.Event, *args, **kwargs):
-        while not stop_event.is_set():
+    def run(self, *args, **kwargs):
+        while not self.should_stop:
             with logger.catch():
                 super().run(*args, **kwargs)
+            self.connection.release()
