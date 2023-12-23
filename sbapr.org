@@ -33,8 +33,9 @@ Jinja/Asciidoc/Hugo?
 * Current work
 ** DONE Spin up a docker compose with the file system
 ** TODO Try to create the entire system, at least in a mocking version
-*** TODO Return a result for each validation
+*** DONE Return a result for each validation
 
+** TODO Redo the logging with structlog
 ** TODO Figure out the deployment of the system
 ** TODO Add molprobity binaries to PATH
 

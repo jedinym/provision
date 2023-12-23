@@ -13,6 +13,7 @@ from sqc.worker import Worker
 
 should_stop = False
 
+
 def handler(_, __):
     global should_stop
     should_stop = True
@@ -32,16 +33,16 @@ def main():
     )
 
     repo = MinioRepo(minio_conn)
-    validator = Validator(repo)
 
     nthreads = 2
     threads: list[threading.Thread] = []
     workers: list[Worker] = []
 
     for _ in range(nthreads):
-        worker = Worker(validator)
+        worker = Worker(repo)
         workers.append(worker)
 
+        logger.info("Starting worker")
         t = threading.Thread(target=worker.run, args=[])
         threads.append(t)
         t.start()

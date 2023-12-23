@@ -1,13 +1,24 @@
+from dataclasses import dataclass
+
 from loguru import logger
 
-from sqc.repository import MinioRepo
+
+@dataclass
+class Result:
+    mock_msg: str
+
+
+class ValidationError(Exception):
+    def __init__(self, *args):
+        super().__init__(*args)
 
 
 class Validator:
-    def __init__(self, repo: MinioRepo):
-        self.repo = repo
+    @staticmethod
+    def validate(path: str) -> Result:
+        logger.debug(f"Starting validation of {path}")
 
-    def validate(self, request: str) -> None:
-        path = self.repo.download_request(request)
         # TODO: run validation
-        logger.info(f"Starting validation of {request}")
+        mock_result = Result(mock_msg="Successful validation!")
+
+        return mock_result

@@ -1,18 +1,21 @@
+import os
 from typing import Any
 
 from loguru import logger
 from kombu import Connection, Exchange, Queue
 from kombu.mixins import ConsumerMixin
 
-from sqc.validation import Validator
+from sqc.repository import MinioRepo, SQCResponse
+from sqc.validation import ValidationError, Validator
 
 
 class Worker(ConsumerMixin):
     queue = Queue("requests", Exchange("requests", type="fanout", durable=True), "#")
 
-    def __init__(self, validator: Validator):
-        self.connection = Connection("amqp://guest:guest@localhost:5672//")
-        self.validator = validator
+    def __init__(self, repo: MinioRepo):
+        rabbit_url = os.environ.get("RABBIT_URL", "amqp://guest:guest@localhost:5672//")
+        self.connection = Connection(rabbit_url)
+        self.repo = repo
 
     def get_consumers(self, Consumer, _channel):
         return [Consumer(queues=[self.queue], callbacks=[self.on_message])]
@@ -26,7 +29,17 @@ class Worker(ConsumerMixin):
 
         request = body["Records"][0]["s3"]["object"]["key"]
         logger.info(f"Got request: {request}")
-        self.validator.validate(request)
+
+        resp: SQCResponse | None = None
+        try:
+            path = self.repo.download_request(request)
+            result = Validator.validate(path)
+            resp = SQCResponse.ok(result)
+        except ValidationError as err:
+            resp = SQCResponse.err(str(err))
+        finally:
+            if resp:
+                self.repo.write_response(request, resp)
 
     def run(self, *args, **kwargs):
         while not self.should_stop:
