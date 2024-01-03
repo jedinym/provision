@@ -29,10 +29,6 @@ ENV PATH="$PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH"
 RUN /pyenv/bin/pyenv install 3.11.6 && \
     /pyenv/bin/pyenv global 3.11.6
 
-# setup github public keys
-RUN mkdir -p -m 0700 ~/.ssh && \
-    ssh-keyscan github.com >> ~/.ssh/known_hosts
-
 WORKDIR /src
 
 COPY pyproject.toml pyproject.toml
@@ -40,8 +36,7 @@ COPY pyproject.toml pyproject.toml
 RUN python -m venv venv
 ENV PATH="venv/bin:$PATH"
 
-RUN --mount=type=ssh \
-    python -m pip install pdm && \
+RUN python -m pip install --no-cache-dir pdm && \
     pdm install
 
 COPY sqc sqc
