@@ -3,12 +3,10 @@ import threading
 from time import sleep
 import signal
 
-from kombu import Connection
 from loguru import logger
 import minio
 
 from sqc.repository import MinioRepo
-from sqc.validation import Validator
 from sqc.worker import Worker
 
 should_stop = False
@@ -34,6 +32,7 @@ def main():
 
     repo = MinioRepo(minio_conn)
 
+    # TODO: adjust the number of workers as needed
     nthreads = 2
     threads: list[threading.Thread] = []
     workers: list[Worker] = []

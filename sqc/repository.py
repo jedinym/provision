@@ -58,7 +58,9 @@ class MinioRepo:
         if response.result:
             body = json.dumps(response.result.__dict__).encode("UTF-8")
             stream = io.BytesIO(body)
-            self._write_object(self.result_bucket, f"{request}.json", stream, len(body), metadata)
+            self._write_object(
+                self.result_bucket, f"{request}.json", stream, len(body), metadata
+            )
 
     def _write_object(
         self,
