@@ -30,26 +30,18 @@ serveru s výstupem z validačního serveru PDB a provést analýzu rozdílů.
 Jinja/Asciidoc/Hugo?
 ** PDB output XML adapter to my output
 
-* Current work
-** DONE Spin up a docker compose with the file system
-** DONE Try to create the entire system, at least in a mocking version
-*** DONE Return a result for each validation
-
+* Backlog
 ** TODO Redo the logging with structlog
+** TODO User authorization
+With the current design, any user has access to the entire Minio object storage.
+We should look into ways of restricting access. It seems there is a way to have
+fine-grained bucket permissions using S3 folders and IAM policies, see [[https://aws.amazon.com/blogs/security/writing-iam-policies-grant-access-to-user-specific-folders-in-an-amazon-s3-bucket/][AWS docs]].
+
+* Current work
 ** TODO Figure out the deployment of the system
 ** TODO Add molprobity binaries to PATH
 
 * Discussion points
-** TODO Authorization
-With the current design, any user has access to the entire Minio object storage.
-We should look into ways of restricting access. A proxy server of some kind?
-
-Minio offers some access control, but not granular enough. Any user with write
-access to a bucket can do operations on all objects in that bucket. Preferably,
-the user should only be able to access their own resource.
-
-It seems there is a way to have fine-grained bucket permissions using S3 folders
-and IAM policies, see [[https://aws.amazon.com/blogs/security/writing-iam-policies-grant-access-to-user-specific-folders-in-an-amazon-s3-bucket/][AWS docs]].
 
 * References
 ** [[file:papers/validation-of-structures-pdb.pdf][Validation of structures in PDB]]

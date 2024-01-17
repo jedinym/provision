@@ -46,3 +46,23 @@ Cons:
 - We would need multiple processes in a single container to get around python's
   GIL which could get quite complex.
 
+
+* DONE Spin up a docker compose with the file system
+:PROPERTIES:
+:ARCHIVE_TIME: 2024-01-04 Thu 09:15
+:ARCHIVE_FILE: ~/Documents/muni/sqc/sbapr.org
+:ARCHIVE_OLPATH: Current work
+:ARCHIVE_CATEGORY: sbapr
+:ARCHIVE_TODO: DONE
+:END:
+
+* DONE Try to create the entire system, at least in a mocking version
+:PROPERTIES:
+:ARCHIVE_TIME: 2024-01-04 Thu 09:15
+:ARCHIVE_FILE: ~/Documents/muni/sqc/sbapr.org
+:ARCHIVE_OLPATH: Current work
+:ARCHIVE_CATEGORY: sbapr
+:ARCHIVE_TODO: DONE
+:END:
+** DONE Return a result for each validation
+
