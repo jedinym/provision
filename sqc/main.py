@@ -12,12 +12,12 @@ from sqc.worker import Worker
 should_stop = False
 
 
-def handler(_, __):
+def handler(_, __) -> None:
     global should_stop
     should_stop = True
 
 
-def main():
+def main() -> None:
     signal.signal(signal.SIGTERM, handler)
     signal.signal(signal.SIGINT, handler)
 
@@ -48,7 +48,7 @@ def main():
 
     global should_stop
     while True:
-        sleep(1)
+        sleep(1)  # TODO: smaller period
         for thread in threads:
             if not thread.is_alive():
                 should_stop = True
