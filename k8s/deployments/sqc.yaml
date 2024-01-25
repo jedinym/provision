@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sqc-deployment
+  labels:
+    app: sqc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sqc
+  template:
+    metadata:
+      labels:
+        app: sqc
+    spec:
+      containers:
+      - name: sqc
+        image: jedinym/sqc:latest
+        env:
+          - name: MINIO_URL
+            value: "minio:8080"
+          - name: MINIO_USER
+            valueFrom:
+              secretKeyRef:
+                name: minio-user
+                key: username
+          - name: MINIO_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: minio-user
+                key: password
+          - name: RABBITMQ_URL
+            value: "rabbitmq:5672"
+          - name: RABBITMQ_USER
+            valueFrom:
+              secretKeyRef:
+                name: rabbitmq-user
+                key: username
+          - name: RABBITMQ_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: rabbitmq-user
+                key: password
+          - name: NTHREADS
+            value: "1"
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          runAsUser: 1000
+          seccompProfile:
+            type: RuntimeDefault
+          capabilities:
+            drop:
+              - ALL

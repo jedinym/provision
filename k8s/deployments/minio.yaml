@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: minio-deployment
+  labels:
+    app: minio
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: minio
+  template:
+    metadata:
+      labels:
+        app: minio
+    spec:
+      containers:
+        - name: minio
+          image: minio/minio
+          ports:
+            - containerPort: 9000
+            - containerPort: 9001
+          readinessProbe:
+            exec:
+              command:
+                - mc
+                - ready
+                - local
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 5
+          command: ['minio', 'server', '/tmp']
+          env:
+            - name: MINIO_CONSOLE_ADDRESS
+              value: "0.0.0.0:9001"
+            - name: MINIO_ROOT_USER
+              valueFrom:
+                secretKeyRef:
+                  name: minio-user
+                  key: username
+            - name: MINIO_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: minio-user
+                  key: password
+            - name: MINIO_API_SYNC_EVENTS
+              value: "on"
+            - name: MINIO_NOTIFY_AMQP_ENABLE_PRIMARY
+              value: "on"
+              # TODO: this should be dependendent on the k8s secret
+            - name: MINIO_NOTIFY_AMQP_URL_PRIMARY
+              value: "amqp://guest:guest@rabbitmq:5672"
+            - name: MINIO_NOTIFY_AMQP_EXCHANGE_PRIMARY
+              value: "requests"
+            - name: MINIO_NOTIFY_AMQP_EXCHANGE_TYPE_PRIMARY
+              value: "fanout"
+            - name: MINIO_NOTIFY_AMQP_DURABLE_PRIMARY
+              value: "on"
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            runAsUser: 1000
+            seccompProfile:
+              type: RuntimeDefault
+            capabilities:
+              drop:
+                - ALL
