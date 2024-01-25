@@ -9,12 +9,12 @@ import minio
 from sqc.repository import MinioRepo
 from sqc.worker import Worker
 
-should_stop = False
+SHOULD_STOP = False
 
 
 def handler(_, __) -> None:
-    global should_stop
-    should_stop = True
+    global SHOULD_STOP
+    SHOULD_STOP = True
 
 
 def main() -> None:
@@ -43,15 +43,15 @@ def main() -> None:
         threads.append(t)
         t.start()
 
-    global should_stop
+    global SHOULD_STOP
     while True:
         sleep(1)  # TODO: smaller period
         for thread in threads:
             if not thread.is_alive():
-                should_stop = True
+                SHOULD_STOP = True
                 logger.error("Worker thread died during execution")
 
-        if should_stop:
+        if SHOULD_STOP:
             logger.warning("Stopping all workers")
             for worker in workers:
                 worker.should_stop = True
