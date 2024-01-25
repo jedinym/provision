@@ -4,6 +4,7 @@ from dataclasses import dataclass
 
 from loguru import logger
 import minio
+from minio.notificationconfig import QueueConfig, NotificationConfig
 
 from sqc.validation import Result
 
@@ -27,11 +28,20 @@ class MinioRepo:
     result_bucket = "results"
 
     def __init__(self, minio: minio.Minio):
-        # TODO: set bucket notifications
         self.minio = minio
 
-        self._ensure_bucket("requests")
-        self._ensure_bucket("results")
+        self._ensure_bucket(self.request_bucket)
+        self._ensure_bucket(self.result_bucket)
+
+        notif_cfg = NotificationConfig(
+            queue_config_list=[
+                QueueConfig(
+                    "arn:minio:sqs::PRIMARY:amqp",
+                    ["s3:ObjectCreated:Put"]
+                )
+            ]
+        )
+        minio.set_bucket_notification(self.request_bucket, notif_cfg)
 
     def _ensure_bucket(self, bucket: str) -> None:
         if not self.minio.bucket_exists(bucket):
