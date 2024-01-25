@@ -1,0 +1,315 @@
+---
+
+- name: Deploy SQC
+  hosts: metacentrum
+  connection: local
+
+  tasks:
+    - name: Create a k8s namespace
+      kubernetes.core.k8s:
+        name: "{{ k8s_sqc_namespace }}"
+        api_version: v1
+        kind: Namespace
+        state: present
+
+    - name: Apply RabbitMQ Deployment
+      kubernetes.core.k8s:
+        namespace: "{{ k8s_sqc_namespace }}"
+        state: present
+        wait: true
+        wait_condition:
+          reason: NewReplicaSetAvailable
+        definition:
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: rabbitmq-deployment
+            labels:
+              app: rabbitmq
+          spec:
+            replicas: 1
+            selector:
+              matchLabels:
+                app: rabbitmq
+            template:
+              metadata:
+                labels:
+                  app: rabbitmq
+              spec:
+                containers:
+                  - name: rabbitmq
+                    image: rabbitmq:3.12-management
+                    ports:
+                      - containerPort: 5672
+                    readinessProbe:
+                      exec:
+                        command:
+                          - rabbitmq-diagnostics
+                          - -q
+                          - ping
+                      initialDelaySeconds: 5
+                      periodSeconds: 5
+                      timeoutSeconds: 5
+                    securityContext:
+                      allowPrivilegeEscalation: false
+                      runAsNonRoot: true
+                      runAsUser: 1000
+                      seccompProfile:
+                        type: RuntimeDefault
+                      capabilities:
+                        drop:
+                          - ALL
+
+    - name: Apply Minio Deployment
+      kubernetes.core.k8s:
+        namespace: "{{ k8s_sqc_namespace }}"
+        state: present
+        wait: true
+        wait_condition:
+          reason: NewReplicaSetAvailable
+        definition:
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: minio-deployment
+            labels:
+              app: minio
+          spec:
+            replicas: 1
+            selector:
+              matchLabels:
+                app: minio
+            template:
+              metadata:
+                labels:
+                  app: minio
+              spec:
+                containers:
+                  - name: minio
+                    image: minio/minio
+                    ports:
+                      - containerPort: 9000
+                      - containerPort: 9001
+                    readinessProbe:
+                      exec:
+                        command:
+                          - mc
+                          - ready
+                          - local
+                      initialDelaySeconds: 5
+                      periodSeconds: 5
+                      timeoutSeconds: 5
+                    command: ['minio', 'server', '/tmp']
+                    env:
+                      - name: MINIO_CONSOLE_ADDRESS
+                        value: "0.0.0.0:9001"
+                      - name: MINIO_ROOT_USER
+                        valueFrom:
+                          secretKeyRef:
+                            name: minio-user
+                            key: username
+                      - name: MINIO_ROOT_PASSWORD
+                        valueFrom:
+                          secretKeyRef:
+                            name: minio-user
+                            key: password
+                      - name: MINIO_API_SYNC_EVENTS
+                        value: "on"
+                      - name: MINIO_NOTIFY_AMQP_ENABLE_PRIMARY
+                        value: "on"
+                        # TODO: this should be dependendent on the k8s secret
+                      - name: MINIO_NOTIFY_AMQP_URL_PRIMARY
+                        value: "amqp://guest:guest@rabbitmq:5672"
+                      - name: MINIO_NOTIFY_AMQP_EXCHANGE_PRIMARY
+                        value: "requests"
+                      - name: MINIO_NOTIFY_AMQP_EXCHANGE_TYPE_PRIMARY
+                        value: "fanout"
+                      - name: MINIO_NOTIFY_AMQP_DURABLE_PRIMARY
+                        value: "on"
+                    securityContext:
+                      allowPrivilegeEscalation: false
+                      runAsNonRoot: true
+                      runAsUser: 1000
+                      seccompProfile:
+                        type: RuntimeDefault
+                      capabilities:
+                        drop:
+                          - ALL
+
+    - name: Apply SQC Deployment
+      kubernetes.core.k8s:
+        namespace: "{{ k8s_sqc_namespace }}"
+        state: present
+        wait: true
+        wait_condition:
+          reason: NewReplicaSetAvailable
+        definition:
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: sqc-deployment
+            labels:
+              app: sqc
+          spec:
+            replicas: 1
+            selector:
+              matchLabels:
+                app: sqc
+            template:
+              metadata:
+                labels:
+                  app: sqc
+              spec:
+                containers:
+                - name: sqc
+                  image: jedinym/sqc:latest
+                  env:
+                    - name: MINIO_URL
+                      value: "minio:8080"
+                    - name: MINIO_USER
+                      valueFrom:
+                        secretKeyRef:
+                          name: minio-user
+                          key: username
+                    - name: MINIO_PASSWORD
+                      valueFrom:
+                        secretKeyRef:
+                          name: minio-user
+                          key: password
+                    - name: RABBITMQ_URL
+                      value: "rabbitmq:5672"
+                    - name: RABBITMQ_USER
+                      valueFrom:
+                        secretKeyRef:
+                          name: rabbitmq-user
+                          key: username
+                    - name: RABBITMQ_PASSWORD
+                      valueFrom:
+                        secretKeyRef:
+                          name: rabbitmq-user
+                          key: password
+                    - name: NTHREADS
+                      value: "1"
+                  securityContext:
+                    allowPrivilegeEscalation: false
+                    runAsNonRoot: true
+                    runAsUser: 1000
+                    seccompProfile:
+                      type: RuntimeDefault
+                    capabilities:
+                      drop:
+                        - ALL
+
+    - name: Apply RabbitMQ service
+      kubernetes.core.k8s:
+        namespace: "{{ k8s_sqc_namespace }}"
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: rabbitmq
+            labels:
+              app: rabbitmq
+          spec:
+            ports:
+            - port: 5672
+              protocol: TCP
+            selector:
+              app: rabbitmq
+
+    - name: Apply Minio S3 service
+      kubernetes.core.k8s:
+        namespace: "{{ k8s_sqc_namespace }}"
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: minio
+            labels:
+              app: minio
+          spec:
+            type: ClusterIP
+            ports:
+              - port: 8080
+                targetPort: 9000
+            selector:
+              app: minio
+
+    - name: Apply Minio management service
+      kubernetes.core.k8s:
+        namespace: "{{ k8s_sqc_namespace }}"
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: minio-management
+            labels:
+              app: minio
+          spec:
+            type: ClusterIP
+            ports:
+              - port: 8080
+                targetPort: 9001
+            selector:
+              app: minio
+
+    - name: Apply Minio management ingress
+      kubernetes.core.k8s:
+        namespace: "{{ k8s_sqc_namespace }}"
+        state: present
+        definition:
+          apiVersion: networking.k8s.io/v1
+          kind: Ingress
+          metadata:
+            name: minio-management
+            annotations:
+              kubernetes.io/ingress.class: "nginx"
+              kubernetes.io/tls-acme: "true"
+              cert-manager.io/cluster-issuer: "letsencrypt-prod"
+          spec:
+            tls:
+              - hosts:
+                  - "sqc-management.dyn.cloud.e-infra.cz"
+                secretName: sqc-management-dyn-clout-e-infra-cz-tls
+            rules:
+              - host: "sqc-management.dyn.cloud.e-infra.cz"
+                http:
+                  paths:
+                  - backend:
+                      service:
+                        name: minio-management
+                        port:
+                          number: 8080
+                    pathType: ImplementationSpecific
+
+    - name: Apply Minio S3 ingress
+      kubernetes.core.k8s:
+        namespace: "{{ k8s_sqc_namespace }}"
+        state: present
+        definition:
+          apiVersion: networking.k8s.io/v1
+          kind: Ingress
+          metadata:
+            name: minio
+            annotations:
+              kubernetes.io/ingress.class: "nginx"
+              kubernetes.io/tls-acme: "true"
+              cert-manager.io/cluster-issuer: "letsencrypt-prod"
+          spec:
+            tls:
+              - hosts:
+                  - "sqc-minio.dyn.cloud.e-infra.cz"
+                secretName: sqc-minio-dyn-clout-e-infra-cz-tls
+            rules:
+              - host: "sqc-minio.dyn.cloud.e-infra.cz"
+                http:
+                  paths:
+                  - backend:
+                      service:
+                        name: minio
+                        port:
+                          number: 8080
+                    pathType: ImplementationSpecific

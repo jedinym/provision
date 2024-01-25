@@ -11,6 +11,10 @@ dependencies = [
 [tool.pdm.scripts]
 main = {call = "sqc.main:main"}
 
+[tool.pdm.dev-dependencies]
+dev = [
+    "kubernetes>=29.0.0",
+]
 [build-system]
 requires = ["pdm-backend"]
 build-backend = "pdm.backend"
