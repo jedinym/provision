@@ -21,19 +21,16 @@ def main() -> None:
     signal.signal(signal.SIGTERM, handler)
     signal.signal(signal.SIGINT, handler)
 
-    local_env = os.environ.get("LOCAL_ENV", "false").lower() == "true"
-
     minio_conn = minio.Minio(
-        endpoint=os.environ["MINIO_ENDPOINT"].strip('"'),
-        access_key="minioadmin",
-        secret_key="minioadmin",
-        secure=False if local_env else True,
+        endpoint=os.environ["MINIO_URL"].strip('"'),
+        access_key=os.environ.get("MINIO_USER", "minioadmin"),
+        secret_key=os.environ.get("MINIO_PASSWORD", "minioadmin"),
+        secure=False,
     )
 
     repo = MinioRepo(minio_conn)
 
-    # TODO: adjust the number of workers as needed
-    nthreads = 2
+    nthreads = int(os.environ.get("NTHREADS", 1))
     threads: list[threading.Thread] = []
     workers: list[Worker] = []
 
