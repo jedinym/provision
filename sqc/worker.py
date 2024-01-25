@@ -13,8 +13,11 @@ class Worker(ConsumerMixin):
     queue = Queue("requests", Exchange("requests", type="fanout", durable=True), "#")
 
     def __init__(self, repo: MinioRepo) -> None:
-        rabbit_url = os.environ.get("RABBIT_URL", "amqp://guest:guest@localhost:5672//")
-        self.connection = Connection(rabbit_url)
+        rabbit_user = os.environ.get("RABBITMQ_USER", "guest")
+        rabbit_password = os.environ.get("RABBITMQ_PASSWORD", "guest")
+        rabbit_url = os.environ.get("RABBITMQ_URL", "rabbitmq:5672")
+        rabbit_conn = f"amqp://{rabbit_user}:{rabbit_password}@{rabbit_url}//"
+        self.connection = Connection(rabbit_conn)
         self.repo = repo
 
     def get_consumers(self, consumer, _channel):
