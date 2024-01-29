@@ -32,6 +32,11 @@ Jinja/Asciidoc/Hugo?
 
 * Backlog
 ** TODO Redo the logging with structlog
+** TODO Add molprobity binaries to PATH
+** TODO Package SQC using Helm?
+** TODO Set correct mimetype for result in minio
+** TODO Move secrets to be part of deploy?
+** TODO Host documentation somewhere accessible
 ** TODO User authorization
 With the current design, any user has access to the entire Minio object storage.
 We should look into ways of restricting access. It seems there is a way to have
@@ -39,7 +44,12 @@ fine-grained bucket permissions using S3 folders and IAM policies, see [[https:/
 
 * Current work
 ** TODO Figure out the deployment of the system
-** TODO Add molprobity binaries to PATH
+*** DONE Find a way to store secrets in k8s
+*** TODO Add readiness probe for SQC
+*** TODO Add PV/PVCs for minio data
+*** TODO ADD PV/PVCs for rabbitmq queue
+*** TODO Expose RabbitMQ management outside the cluster
+**** TODO Create user accounts for RabbitMQ
 
 * Discussion points
 
