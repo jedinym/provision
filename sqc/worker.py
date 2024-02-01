@@ -20,7 +20,7 @@ class Worker(ConsumerMixin):
         self.connection = Connection(rabbit_conn)
         self.repo = repo
 
-    def get_consumers(self, consumer, _channel):
+    def get_consumers(self, consumer, _):
         return [consumer(queues=[self.queue], callbacks=[self.on_message])]
 
     def on_message(self, body: dict[str, Any], message) -> None:
@@ -41,6 +41,7 @@ class Worker(ConsumerMixin):
         except ValidationError as err:
             resp = SQCResponse.err(str(err))
         finally:
+            self.repo.delete_request(request)
             if resp:
                 self.repo.write_response(request, resp)
 

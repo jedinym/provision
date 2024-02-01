@@ -53,9 +53,14 @@ class MinioRepo:
     def download_request(self, request: str) -> str:
         path = f"/tmp/{request}"
         logger.debug(f"Downloading {request} to {path}")
-        # TODO: wrap this in a try block
+        # FIXME: wrap this in a try block/retry mechanism?
         self.minio.fget_object("requests", request, path)
         return path
+
+    def delete_request(self, request: str) -> None:
+        # FIXME: wrap this in a try block/retry mechanism?
+        self.minio.remove_object(self.request_bucket, request)
+        logger.debug(f"Deleted request {request} from minio")
 
     def write_response(self, request: str, response: SQCResponse) -> None:
         logger.info(f"Writing response {request} to Minio: {response}")
