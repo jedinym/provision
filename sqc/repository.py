@@ -1,7 +1,7 @@
 import json
 import io
 from dataclasses import dataclass
-from typing import Callable, TypeVar, Any
+from typing import Any
 import functools
 
 from loguru import logger
@@ -30,7 +30,7 @@ class InternalError(Exception):
         super().__init__(*args)
 
 
-def mask_minio_action(name: str):
+def mask_minio_action(name: str, raise_error: bool = True):
     def wrapper(action):
         @functools.wraps(action)
         def inner(*args, **kwargs):
@@ -46,15 +46,14 @@ def mask_minio_action(name: str):
                     retries -= 1
                     last_err = err
 
-                    if last_err:
-                        logger.exception(
-                            f"Failed to execute action {name} after retrying: {last_err}"
-                        )
-                        raise InternalError from last_err
+            if last_err:
+                logger.exception(
+                    f"Failed to execute action {name} after retrying: {last_err}"
+                )
+                if raise_error:
+                    raise InternalError from last_err
 
-                    # result must have a value if last_err is None
-                    assert result is not None
-                    return result
+            return result
 
         return inner
 
@@ -95,7 +94,7 @@ class MinioRepo:
         self.minio.fget_object("requests", request, path)
         return path
 
-    @mask_minio_action("delete_request")
+    @mask_minio_action("delete_request", raise_error=False)
     def delete_request(self, request: str) -> None:
         logger.debug(f"Deleting request {request} from minio")
         self.minio.remove_object(self.request_bucket, request)
@@ -111,7 +110,7 @@ class MinioRepo:
             body = json.dumps(response.result.__dict__).encode("UTF-8")
             self._write_response(f"{request}.json", body, metadata)
 
-    @mask_minio_action("write_response")
+    @mask_minio_action("write_response", raise_error=False)
     def _write_response(
         self, object_name: str, body: bytes, metadata: dict[Any, Any]
     ) -> None:
