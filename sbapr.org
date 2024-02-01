@@ -31,11 +31,10 @@ Jinja/Asciidoc/Hugo?
 ** PDB output XML adapter to my output
 
 * Backlog
-** TODO Add molprobity binaries to PATH
-** TODO Package SQC using Helm?
 ** TODO Set correct mimetype for result in minio
 ** TODO Move secrets to be part of deploy?
 ** TODO Host documentation somewhere accessible
+** TODO Add mechanism for tearing down the deployment
 ** TODO Document the deployment process
 *** TODO Expose RabbitMQ management outside the cluster
 **** TODO Create user accounts for RabbitMQ
@@ -43,6 +42,7 @@ Jinja/Asciidoc/Hugo?
 With the current design, any user has access to the entire Minio object storage.
 We should look into ways of restricting access. It seems there is a way to have
 fine-grained bucket permissions using S3 folders and IAM policies, see [[https://aws.amazon.com/blogs/security/writing-iam-policies-grant-access-to-user-specific-folders-in-an-amazon-s3-bucket/][AWS docs]].
+** TODO Package SQC using Helm?
 
 * Current work
 ** TODO Figure out the deployment of the system
