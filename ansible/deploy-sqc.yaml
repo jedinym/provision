@@ -12,6 +12,44 @@
         kind: Namespace
         state: present
 
+    - name: Create Minio PVC
+      kubernetes.core.k8s:
+        namespace: "{{ k8s_sqc_namespace }}"
+        state: present
+        definition:
+          kind: PersistentVolumeClaim
+          apiVersion: v1
+          metadata:
+            name: minio-pvc
+            labels:
+              app: minio
+          spec:
+            accessModes:
+              - ReadWriteMany
+            resources:
+              requests:
+                storage: 2Gi
+            storageClassName: nfs-csi
+
+    - name: Create RabbitMQ PVC
+      kubernetes.core.k8s:
+        namespace: "{{ k8s_sqc_namespace }}"
+        state: present
+        definition:
+          kind: PersistentVolumeClaim
+          apiVersion: v1
+          metadata:
+            name: rabbitmq-pvc
+            labels:
+              app: rabbitmq
+          spec:
+            accessModes:
+              - ReadWriteMany
+            resources:
+              requests:
+                storage: 64Mi
+            storageClassName: nfs-csi
+
     - name: Apply RabbitMQ Deployment
       kubernetes.core.k8s:
         namespace: "{{ k8s_sqc_namespace }}"
@@ -36,11 +74,18 @@
                 labels:
                   app: rabbitmq
               spec:
+                volumes:
+                  - name: rabbitmq-storage
+                    persistentVolumeClaim:
+                      claimName: rabbitmq-pvc
                 containers:
                   - name: rabbitmq
                     image: rabbitmq:3.12-management
                     ports:
                       - containerPort: 5672
+                    volumeMounts:
+                      - mountPath: "/var/lib/rabbitmq/mnesia"
+                        name: rabbitmq-storage
                     readinessProbe:
                       exec:
                         command:
@@ -84,12 +129,19 @@
                 labels:
                   app: minio
               spec:
+                volumes:
+                  - name: minio-storage
+                    persistentVolumeClaim:
+                      claimName: minio-pvc
                 containers:
                   - name: minio
                     image: minio/minio
                     ports:
                       - containerPort: 9000
                       - containerPort: 9001
+                    volumeMounts:
+                      - mountPath: "/data"
+                        name: minio-storage
                     readinessProbe:
                       exec:
                         command:
@@ -99,7 +151,7 @@
                       initialDelaySeconds: 5
                       periodSeconds: 5
                       timeoutSeconds: 5
-                    command: ['minio', 'server', '/tmp']
+                    command: ['minio', 'server', '/data']
                     env:
                       - name: MINIO_CONSOLE_ADDRESS
                         value: "0.0.0.0:9001"
