@@ -1,6 +1,8 @@
 import json
 import io
 from dataclasses import dataclass
+from typing import Callable, TypeVar, Any
+import functools
 
 from loguru import logger
 import minio
@@ -23,6 +25,42 @@ class SQCResponse:
         return SQCResponse(msg, None)
 
 
+class InternalError(Exception):
+    def __init__(self, *args) -> None:
+        super().__init__(*args)
+
+
+def mask_minio_action(name: str):
+    def wrapper(action):
+        @functools.wraps(action)
+        def inner(*args, **kwargs):
+            retries = 3
+            last_err = None
+            result = None
+            while retries != 0:
+                try:
+                    result = action(*args, **kwargs)
+                    break
+                except minio.S3Error as err:
+                    logger.warning(f"Failed to execute action: {name}")
+                    retries -= 1
+                    last_err = err
+
+                    if last_err:
+                        logger.exception(
+                            f"Failed to execute action {name} after retrying: {last_err}"
+                        )
+                        raise InternalError from last_err
+
+                    # result must have a value if last_err is None
+                    assert result is not None
+                    return result
+
+        return inner
+
+    return wrapper
+
+
 class MinioRepo:
     request_bucket = "requests"
     result_bucket = "results"
@@ -35,10 +73,7 @@ class MinioRepo:
 
         notif_cfg = NotificationConfig(
             queue_config_list=[
-                QueueConfig(
-                    "arn:minio:sqs::PRIMARY:amqp",
-                    ["s3:ObjectCreated:Put"]
-                )
+                QueueConfig("arn:minio:sqs::PRIMARY:amqp", ["s3:ObjectCreated:Put"])
             ]
         )
         minio.set_bucket_notification(self.request_bucket, notif_cfg)
@@ -53,14 +88,17 @@ class MinioRepo:
     def download_request(self, request: str) -> str:
         path = f"/tmp/{request}"
         logger.debug(f"Downloading {request} to {path}")
-        # FIXME: wrap this in a try block/retry mechanism?
+        return self._download_request(request, path)
+
+    @mask_minio_action("download_request")
+    def _download_request(self, request: str, path: str) -> str:
         self.minio.fget_object("requests", request, path)
         return path
 
+    @mask_minio_action("delete_request")
     def delete_request(self, request: str) -> None:
-        # FIXME: wrap this in a try block/retry mechanism?
+        logger.debug(f"Deleting request {request} from minio")
         self.minio.remove_object(self.request_bucket, request)
-        logger.debug(f"Deleted request {request} from minio")
 
     def write_response(self, request: str, response: SQCResponse) -> None:
         logger.info(f"Writing response {request} to Minio: {response}")
@@ -71,40 +109,19 @@ class MinioRepo:
 
         if response.result:
             body = json.dumps(response.result.__dict__).encode("UTF-8")
-            stream = io.BytesIO(body)
-            self._write_object(
-                self.result_bucket, f"{request}.json", stream, len(body), metadata
-            )
+            self._write_response(f"{request}.json", body, metadata)
 
-    def _write_object(
-        self,
-        bucket: str,
-        obj_name: str,
-        data: io.BytesIO,
-        data_len: int,
-        metadata: dict[str, str],
-    ):
-        retries = 3
-        last_err = None
-        success = False
-        while retries != 0:
-            logger.debug(f"Writing result to minio with metadata {metadata}")
-            try:
-                self.minio.put_object(
-                    bucket,
-                    obj_name,
-                    data,
-                    data_len,
-                    metadata=metadata,
-                )
-                success = True
-                break
-            except minio.S3Error as err:
-                logger.warning("Failed to write response to minio, retrying")
-                retries -= 1
-                last_err = err
+    @mask_minio_action("write_response")
+    def _write_response(
+        self, object_name: str, body: bytes, metadata: dict[Any, Any]
+    ) -> None:
+        stream = io.BytesIO(body)
 
-        if not success:
-            logger.exception(
-                f"Failed to write response to minio after retrying: {last_err}"
-            )
+        logger.debug(f"Writing result to minio with metadata {metadata}")
+        self.minio.put_object(
+            self.result_bucket,
+            object_name,
+            stream,
+            len(body),
+            metadata=metadata,
+        )
