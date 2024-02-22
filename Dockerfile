@@ -8,6 +8,8 @@ RUN apt-get update && \
     apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y \
+            vim \
+            default-jre \
             git \
             curl \
             make \
@@ -52,7 +54,7 @@ WORKDIR /molprobity
 
 RUN wget -O bootstrap.py https://github.com/cctbx/cctbx_project/raw/master/libtbx/auto_build/bootstrap.py
 
-RUN python3 bootstrap.py --builder=molprobity --use-conda --nproc=12
+RUN python3 bootstrap.py --builder=molprobity --use-conda --nproc=6
 
 WORKDIR /
 
