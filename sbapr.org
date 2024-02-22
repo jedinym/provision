@@ -43,17 +43,12 @@ With the current design, any user has access to the entire Minio object storage.
 We should look into ways of restricting access. It seems there is a way to have
 fine-grained bucket permissions using S3 folders and IAM policies, see [[https://aws.amazon.com/blogs/security/writing-iam-policies-grant-access-to-user-specific-folders-in-an-amazon-s3-bucket/][AWS docs]].
 ** TODO Package SQC using Helm?
+** TODO Redo the logging with structlog
+** TODO Add k8s probes for SQC
+** TODO Set up resource requests/limits in k8s
+** TODO file type detection
 
 * Current work
-** TODO Figure out the deployment of the system
-*** DONE Find a way to store secrets in k8s
-*** TODO Add k8s probes for SQC
-*** DONE Add PV/PVCs for minio data
-*** DONE ADD PV/PVCs for rabbitmq queue
-*** TODO Set up resource requests/limits
-
-** DONE Clean up request from minio after completion
-** TODO Redo the logging with structlog
 
 * Discussion points
 
