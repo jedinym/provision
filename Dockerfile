@@ -37,7 +37,7 @@ WORKDIR /molprobity
 
 RUN mkdir -p modules/chem_data
 
-WORKDIR /modules/chem_data
+WORKDIR /molprobity/modules/chem_data
 
 RUN git clone --depth 1 https://github.com/phenix-project/geostd.git && \
     git clone --depth 1 https://github.com/rlabduke/mon_lib.git && \
@@ -52,7 +52,7 @@ WORKDIR /molprobity
 
 RUN wget -O bootstrap.py https://github.com/cctbx/cctbx_project/raw/master/libtbx/auto_build/bootstrap.py
 
-RUN python3 bootstrap.py --builder=molprobity --use-conda --nproc=4
+RUN python3 bootstrap.py --builder=molprobity --use-conda --nproc=12
 
 WORKDIR /
 
