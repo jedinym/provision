@@ -35,8 +35,8 @@ class Worker(ConsumerMixin):
 
         resp: SQCResponse | None = None
         try:
-            path = self.repo.download_request(request)
-            result = Validator.validate(path)
+            path, ftype = self.repo.download_request(request)
+            result = Validator.validate(path, ftype)
             resp = SQCResponse.ok(result)
         except ValidationError as err:
             resp = SQCResponse.err(str(err))

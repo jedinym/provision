@@ -84,15 +84,21 @@ class MinioRepo:
         else:
             logger.info(f"Bucket {bucket} already exists")
 
-    def download_request(self, request: str) -> str:
+    def download_request(self, request: str) -> tuple[str, str]:
         path = f"/tmp/{request}"
         logger.debug(f"Downloading {request} to {path}")
         return self._download_request(request, path)
 
     @mask_minio_action("download_request")
-    def _download_request(self, request: str, path: str) -> str:
-        self.minio.fget_object("requests", request, path)
-        return path
+    def _download_request(self, request: str, path: str) -> tuple[str, str]:
+        self.minio.fget_object(self.request_bucket, request, path)
+        meta = self.minio.stat_object(self.request_bucket, request).metadata
+        if meta:
+            ftype = meta.get("X-Amz-Meta-Ftype", "unknown")
+        else:
+            ftype = "unknown"
+
+        return path, ftype
 
     @mask_minio_action("delete_request", raise_error=False)
     def delete_request(self, request: str) -> None:
