@@ -1,12 +1,15 @@
 import os
 from typing import Any
 
-from loguru import logger
+from structlog import get_logger
+import structlog
 from kombu import Connection, Exchange, Queue
 from kombu.mixins import ConsumerMixin
 
 from sqc.repository import ConversionError, InternalError, MinioRepo, SQCResponse
 from sqc.validation import ValidationError, Validator
+
+logger = get_logger()
 
 
 class Worker(ConsumerMixin):
@@ -25,13 +28,15 @@ class Worker(ConsumerMixin):
 
     def on_message(self, body: dict[str, Any], message) -> None:
         message.ack()
+        structlog.contextvars.clear_contextvars()
 
         if (event_name := body["EventName"]) != "s3:ObjectCreated:Put":
             logger.warning(f"Invalid event name: {event_name}, dropping message")
             return
 
         request = body["Records"][0]["s3"]["object"]["key"]
-        logger.info(f"Got request: {request}")
+        structlog.contextvars.bind_contextvars(request_id=request)
+        logger.info("Got new request")
 
         resp: SQCResponse | None = None
         try:
@@ -49,6 +54,9 @@ class Worker(ConsumerMixin):
 
     def run(self, *args, **kwargs) -> None:
         while not self.should_stop:
-            with logger.catch():
+            try:
                 super().run(*args, **kwargs)
-            self.connection.release()
+            except Exception as err:
+                logger.exception(err)
+
+        self.connection.release()

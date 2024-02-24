@@ -3,14 +3,15 @@ import io
 from dataclasses import dataclass
 from typing import Any
 import functools
-import os
 import subprocess
 
-from loguru import logger
+from structlog import get_logger
 import minio
 from minio.notificationconfig import QueueConfig, NotificationConfig
 
 from sqc.validation import Result
+
+logger = get_logger()
 
 
 @dataclass
@@ -94,19 +95,28 @@ class MinioRepo:
     @staticmethod
     def _convert_to_pdb(path: str) -> str:
         new_path = f"{path.split('.')[-1]}.pdb"
-        logger.info(f"Converting {path} to pdb format")
-        proc = subprocess.run(
-            ["gemmi", "convert", path, new_path], capture_output=True, timeout=60
-        )
+        logger.debug(f"Converting {path} to PDB format")
+
+        try:
+            proc = subprocess.run(
+                ["gemmi", "convert", path, new_path], capture_output=True, timeout=60
+            )
+        except subprocess.TimeoutExpired:
+            logger.warning("Gemmi conversion timed out")
+            raise ConversionError("Failed to convert .mmcif file to PDB format in time")
 
         if proc.returncode != 0:
-            logger.error(f"Failed to convert {path} to PDB format: {proc.stderr}")
+            logger.info(
+                f"Failed to convert MMCIF to PDB format",
+                gemmi_msg=str(proc.stderr),
+                path=path,
+            )
             raise ConversionError("Failed to convert .mmcif file to PDB format")
 
         return new_path
 
     def download_request(self, request: str) -> str:
-        logger.debug(f"Fetching {request}")
+        logger.debug(f"Fetching request")
         path, ftype = self._download_request(request)
         if ftype != "pdb":
             path = MinioRepo._convert_to_pdb(path)
@@ -131,11 +141,11 @@ class MinioRepo:
 
     @mask_minio_action("delete_request", raise_error=False)
     def delete_request(self, request: str) -> None:
-        logger.debug(f"Deleting request {request} from minio")
+        logger.debug(f"Deleting request from Minio")
         self.minio.remove_object(self.request_bucket, request)
 
     def write_response(self, request: str, response: SQCResponse) -> None:
-        logger.info(f"Writing response {request} to Minio: {response}")
+        logger.info(f"Writing response to Minio", response=response)
 
         metadata = dict()
         if response.error:
@@ -143,7 +153,10 @@ class MinioRepo:
 
         if response.result:
             body = json.dumps(response.result.__dict__).encode("UTF-8")
-            self._write_response(f"{request}.json", body, metadata)
+        else:
+            body = bytes()
+
+        self._write_response(f"{request}.json", body, metadata)
 
     @mask_minio_action("write_response", raise_error=False)
     def _write_response(
@@ -151,7 +164,7 @@ class MinioRepo:
     ) -> None:
         stream = io.BytesIO(body)
 
-        logger.debug(f"Writing result to minio with metadata {metadata}")
+        logger.debug(f"Writing result to minio", metadata=metadata)
         self.minio.put_object(
             self.result_bucket,
             object_name,

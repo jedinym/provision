@@ -3,10 +3,10 @@ name = "sqc"
 version = "2023.0.0"
 requires-python = ">= 3.11.6"
 dependencies = [
-    "loguru==0.7.2",
     "kombu==5.3.4",
     "minio==7.2.0",
     "gemmi-program==0.6.5",
+    "structlog>=24.1.0",
 ]
 
 [tool.pdm.scripts]

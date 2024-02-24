@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 
-from loguru import logger
+from structlog import get_logger
+
+logger = get_logger()
 
 
 @dataclass

@@ -47,8 +47,11 @@ fine-grained bucket permissions using S3 folders and IAM policies, see [[https:/
 ** TODO Add k8s probes for SQC
 ** TODO Set up resource requests/limits in k8s
 ** TODO file type detection
+** TODO figure out how not to crash on huge file conversion
 
 * Current work
+** DONE Use Gemmi for mmCIF to PDB conversion as it supports Hybrid36
+** TODO create simple smoke tests for dev purposes
 
 * Discussion points
 

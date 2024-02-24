@@ -3,13 +3,15 @@ import threading
 from time import sleep
 import signal
 
-from loguru import logger
+from structlog import get_logger
 import minio
 
 from sqc.repository import MinioRepo
 from sqc.worker import Worker
 
 SHOULD_STOP = False
+
+logger = get_logger()
 
 
 def handler(_, __) -> None:

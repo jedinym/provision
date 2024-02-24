@@ -32,6 +32,7 @@ services:
       timeout: 30s
       retries: 3
   sqc:
+    tty: true
     build:
       dockerfile: Dockerfile
     environment:
