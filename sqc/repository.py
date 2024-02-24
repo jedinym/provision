@@ -80,7 +80,13 @@ class MinioRepo:
 
         notif_cfg = NotificationConfig(
             queue_config_list=[
-                QueueConfig("arn:minio:sqs::PRIMARY:amqp", ["s3:ObjectCreated:Put"])
+                QueueConfig(
+                    "arn:minio:sqs::PRIMARY:amqp",
+                    [
+                        "s3:ObjectCreated:Put",
+                        "s3:ObjectCreated:CompleteMultipartUpload",
+                    ],
+                )
             ]
         )
         minio.set_bucket_notification(self.request_bucket, notif_cfg)

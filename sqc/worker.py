@@ -30,8 +30,11 @@ class Worker(ConsumerMixin):
         message.ack()
         structlog.contextvars.clear_contextvars()
 
-        if (event_name := body["EventName"]) != "s3:ObjectCreated:Put":
-            logger.warning(f"Invalid event name: {event_name}, dropping message")
+        if (event_name := body["EventName"]) not in {
+            "s3:ObjectCreated:CompleteMultipartUpload",
+            "s3:ObjectCreated:Put",
+        }:
+            logger.warning(f"Invalid event name, dropping message", event_name=event_name)
             return
 
         request = body["Records"][0]["s3"]["object"]["key"]
