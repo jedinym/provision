@@ -5,7 +5,8 @@ requires-python = ">= 3.11.6"
 dependencies = [
     "loguru==0.7.2",
     "kombu==5.3.4",
-    "minio==7.2.0"
+    "minio==7.2.0",
+    "gemmi-program==0.6.5",
 ]
 
 [tool.pdm.scripts]

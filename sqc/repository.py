@@ -3,6 +3,8 @@ import io
 from dataclasses import dataclass
 from typing import Any
 import functools
+import os
+import subprocess
 
 from loguru import logger
 import minio
@@ -26,6 +28,11 @@ class SQCResponse:
 
 
 class InternalError(Exception):
+    def __init__(self, *args) -> None:
+        super().__init__(*args)
+
+
+class ConversionError(Exception):
     def __init__(self, *args) -> None:
         super().__init__(*args)
 
@@ -84,20 +91,42 @@ class MinioRepo:
         else:
             logger.info(f"Bucket {bucket} already exists")
 
-    def download_request(self, request: str) -> tuple[str, str]:
-        path = f"/tmp/{request}"
-        logger.debug(f"Downloading {request} to {path}")
-        return self._download_request(request, path)
+    @staticmethod
+    def _convert_to_pdb(path: str) -> str:
+        new_path = f"{path.split('.')[-1]}.pdb"
+        logger.info(f"Converting {path} to pdb format")
+        proc = subprocess.run(
+            ["gemmi", "convert", path, new_path], capture_output=True, timeout=60
+        )
+
+        if proc.returncode != 0:
+            logger.error(f"Failed to convert {path} to PDB format: {proc.stderr}")
+            raise ConversionError("Failed to convert .mmcif file to PDB format")
+
+        return new_path
+
+    def download_request(self, request: str) -> str:
+        logger.debug(f"Fetching {request}")
+        path, ftype = self._download_request(request)
+        if ftype != "pdb":
+            path = MinioRepo._convert_to_pdb(path)
+
+        return path
 
     @mask_minio_action("download_request")
-    def _download_request(self, request: str, path: str) -> tuple[str, str]:
-        self.minio.fget_object(self.request_bucket, request, path)
-        meta = self.minio.stat_object(self.request_bucket, request).metadata
-        if meta:
-            ftype = meta.get("X-Amz-Meta-Ftype", "unknown")
-        else:
-            ftype = "unknown"
+    def _download_request(self, request: str) -> tuple[str, str]:
+        stat = self.minio.stat_object(self.request_bucket, request)
+        if not stat.metadata:
+            logger.error(f"Request {request} does not contain metadata")
+            raise InternalError()
 
+        ftype = stat.metadata.get("X-Amz-Meta-Ftype")
+        if not ftype:
+            logger.error(f"Request {request} does not contain file type")
+            raise InternalError()
+
+        path = f"{request}.{ftype}"
+        self.minio.fget_object(self.request_bucket, request, path)
         return path, ftype
 
     @mask_minio_action("delete_request", raise_error=False)

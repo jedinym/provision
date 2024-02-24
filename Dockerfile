@@ -56,12 +56,6 @@ RUN wget -O bootstrap.py https://github.com/cctbx/cctbx_project/raw/master/libtb
 
 RUN python3 bootstrap.py --builder=molprobity --use-conda --nproc=6
 
-WORKDIR /
-
-RUN git clone --depth 1 --branch v1.0.1 https://github.com/kad-ecoli/BeEM.git && \
-    mkdir BeEM/bin && \
-    g++ -O3 -o BeEM/bin/BeEM BeEM/BeEM.cpp
-
 FROM base
 
 ENV PATH="${PATH}:/molprobity/molprobity/cmdline/"

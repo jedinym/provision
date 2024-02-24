@@ -5,7 +5,7 @@ from loguru import logger
 from kombu import Connection, Exchange, Queue
 from kombu.mixins import ConsumerMixin
 
-from sqc.repository import InternalError, MinioRepo, SQCResponse
+from sqc.repository import ConversionError, InternalError, MinioRepo, SQCResponse
 from sqc.validation import ValidationError, Validator
 
 
@@ -35,10 +35,10 @@ class Worker(ConsumerMixin):
 
         resp: SQCResponse | None = None
         try:
-            path, ftype = self.repo.download_request(request)
-            result = Validator.validate(path, ftype)
+            path = self.repo.download_request(request)
+            result = Validator.validate(path)
             resp = SQCResponse.ok(result)
-        except ValidationError as err:
+        except (ValidationError, ConversionError) as err:
             resp = SQCResponse.err(str(err))
         except InternalError as err:
             resp = SQCResponse.err("An internal error occured")
