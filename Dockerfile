@@ -1,4 +1,4 @@
-FROM ubuntu:latest as base
+FROM ubuntu:jammy as base
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -7,7 +7,7 @@ RUN apt-get update && \
     add-apt-repository ppa:ondrej/php && \
     apt-get update && \
     apt-get upgrade -y && \
-    apt-get install -y \
+    apt-get install -y --no-install-recommends \
             vim \
             default-jre \
             git \
@@ -47,14 +47,16 @@ RUN git clone --depth 1 https://github.com/phenix-project/geostd.git && \
     git clone --depth 1 https://github.com/rlabduke/cablam_data.git
 
 RUN mkdir rama_z && \
-    wget -O rama_z/top8000_rama_z_dict.pkl \
+    wget --progress=dot:giga -O rama_z/top8000_rama_z_dict.pkl \
             https://github.com/rlabduke/reference_data/raw/master/Top8000/rama_z/top8000_rama_z_dict.pkl
 
 WORKDIR /molprobity
 
-RUN wget -O bootstrap.py https://github.com/cctbx/cctbx_project/raw/master/libtbx/auto_build/bootstrap.py
+RUN wget --progress=dot:giga -O bootstrap.py https://github.com/cctbx/cctbx_project/raw/master/libtbx/auto_build/bootstrap.py && \
+    python3 bootstrap.py --builder=molprobity --use-conda --nproc=6
 
-RUN python3 bootstrap.py --builder=molprobity --use-conda --nproc=6
+WORKDIR /molprobity/molprobity
+RUN ./setup.sh || true
 
 FROM base
 
@@ -77,10 +79,10 @@ COPY pyproject.toml pyproject.toml
 RUN python -m venv venv
 ENV PATH="venv/bin:$PATH"
 
-RUN python -m pip install --no-cache-dir pdm && \
+RUN python -m pip install --no-cache-dir pdm==2.12.4 && \
     pdm install
 
 COPY sqc sqc
 
 # exec hack used for proper handling of signals
-CMD exec pdm run main
+CMD ["exec", "pdm", "run", "main"]
