@@ -85,4 +85,4 @@ RUN python -m pip install --no-cache-dir pdm==2.12.4 && \
 COPY sqc sqc
 
 # exec hack used for proper handling of signals
-CMD ["exec", "pdm", "run", "main"]
+CMD exec pdm run main
