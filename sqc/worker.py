@@ -7,7 +7,7 @@ from kombu import Connection, Exchange, Queue
 from kombu.mixins import ConsumerMixin
 
 from sqc.repository import ConversionError, InternalError, MinioRepo, SQCResponse
-from sqc.validation import ValidationError, Validator
+from sqc.validation import ValidationError, validate
 
 logger = get_logger()
 
@@ -34,7 +34,9 @@ class Worker(ConsumerMixin):
             "s3:ObjectCreated:CompleteMultipartUpload",
             "s3:ObjectCreated:Put",
         }:
-            logger.warning(f"Invalid event name, dropping message", event_name=event_name)
+            logger.warning(
+                f"Invalid event name, dropping message", event_name=event_name
+            )
             return
 
         request = body["Records"][0]["s3"]["object"]["key"]
@@ -44,22 +46,25 @@ class Worker(ConsumerMixin):
         resp: SQCResponse | None = None
         try:
             path = self.repo.download_request(request)
-            result = Validator.validate(path)
+            result = validate(path)
             resp = SQCResponse.ok(result)
         except (ValidationError, ConversionError) as err:
             resp = SQCResponse.err(str(err))
         except InternalError as err:
             resp = SQCResponse.err("An internal error occured")
+        except Exception as err:
+            logger.exception(err)
         finally:
-            self.repo.delete_request(request)
             if resp:
                 self.repo.write_response(request, resp)
+            else:
+                logger.error("SQC response is None")
 
     def run(self, *args, **kwargs) -> None:
         while not self.should_stop:
             try:
                 super().run(*args, **kwargs)
-            except Exception as err:
-                logger.exception(err)
+            except Exception:
+                logger.exception("Worker shut down because of an exception")
 
         self.connection.release()

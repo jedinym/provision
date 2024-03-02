@@ -9,22 +9,20 @@ from structlog import get_logger
 import minio
 from minio.notificationconfig import QueueConfig, NotificationConfig
 
-from sqc.validation import Result
-
 logger = get_logger()
 
 
 @dataclass
 class SQCResponse:
     error: str | None
-    result: Result | None
+    result: str | None
 
     @staticmethod
-    def ok(result: Result):
+    def ok(result: str) -> "SQCResponse":
         return SQCResponse(None, result)
 
     @staticmethod
-    def err(msg: str):
+    def err(msg: str) -> "SQCResponse":
         return SQCResponse(msg, None)
 
 
@@ -49,15 +47,20 @@ def mask_minio_action(name: str, raise_error: bool = True):
                 try:
                     result = action(*args, **kwargs)
                     break
-                except minio.S3Error as err:
-                    logger.warning(f"Failed to execute action: {name}")
+                except Exception as err:
+                    logger.warning("Failed to execute minio action", action=name)
                     retries -= 1
                     last_err = err
 
             if last_err:
-                logger.exception(
-                    f"Failed to execute action {name} after retrying: {last_err}"
-                )
+                # try/except hack to make structlog log the traceback
+                try:
+                    raise last_err
+                except Exception as err:
+                    logger.exception(
+                        f"Failed to execute minio after retrying", action=name
+                    )
+
                 if raise_error:
                     raise InternalError from last_err
 
@@ -133,12 +136,12 @@ class MinioRepo:
     def _download_request(self, request: str) -> tuple[str, str]:
         stat = self.minio.stat_object(self.request_bucket, request)
         if not stat.metadata:
-            logger.error(f"Request {request} does not contain metadata")
+            logger.error(f"Request does not contain metadata")
             raise InternalError()
 
         ftype = stat.metadata.get("X-Amz-Meta-Ftype")
         if not ftype:
-            logger.error(f"Request {request} does not contain file type")
+            logger.error(f"Request does not contain file type")
             raise InternalError()
 
         path = f"{request}.{ftype}"
@@ -151,14 +154,14 @@ class MinioRepo:
         self.minio.remove_object(self.request_bucket, request)
 
     def write_response(self, request: str, response: SQCResponse) -> None:
-        logger.info(f"Writing response to Minio", response=response)
+        logger.info(f"Writing response to Minio")
 
         metadata = dict()
         if response.error:
             metadata["sqc-error"] = response.error
 
         if response.result:
-            body = json.dumps(response.result.__dict__).encode("UTF-8")
+            body = response.result.encode("utf-8")
         else:
             body = bytes()
 
