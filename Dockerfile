@@ -60,9 +60,10 @@ RUN ./setup.sh || true
 
 FROM base
 
-ENV PATH="${PATH}:/molprobity/molprobity/cmdline/"
-ENV PATH="${PATH}:/BeEM/bin/"
-ENV DEBIAN_FRONTEND=noninteractive
+RUN useradd -ms /bin/bash sqc && \
+    mkdir /pyenv && \
+    mkdir /src && \
+    chown sqc /src
 
 # setup pyenv
 RUN git clone https://github.com/pyenv/pyenv.git /pyenv
@@ -71,6 +72,11 @@ ENV PYENV_ROOT="$HOME/.pyenv"
 ENV PATH="$PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH"
 RUN /pyenv/bin/pyenv install 3.11.6 && \
     /pyenv/bin/pyenv global 3.11.6
+
+USER sqc
+
+ENV PATH="${PATH}:/molprobity/molprobity/cmdline/"
+ENV PATH="${PATH}:/BeEM/bin/"
 
 WORKDIR /src
 
