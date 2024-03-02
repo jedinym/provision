@@ -51,9 +51,10 @@ class Worker(ConsumerMixin):
         except (ValidationError, ConversionError) as err:
             resp = SQCResponse.err(str(err))
         except InternalError as err:
-            resp = SQCResponse.err("An internal error occured")
+            resp = SQCResponse.err(f"An internal error occured, request id: {request}")
         except Exception as err:
             logger.exception(err)
+            resp = SQCResponse.err(f"An internal error occured, request id: {request}")
         finally:
             if resp:
                 self.repo.write_response(request, resp)
