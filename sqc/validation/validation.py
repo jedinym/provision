@@ -22,7 +22,7 @@ class ValidationError(Exception):
 
 
 class MolProbity:
-    def __init__(self, timeout=120) -> None:
+    def __init__(self, timeout=600) -> None:
         self.timeout = timeout
 
     def _residue_analysis_output(self, path: str) -> str:
