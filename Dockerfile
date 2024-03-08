@@ -1,4 +1,4 @@
-FROM ubuntu:jammy as base
+FROM ubuntu:jammy-20240227 as base
 
 ENV DEBIAN_FRONTEND=noninteractive
 
