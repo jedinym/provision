@@ -7,10 +7,12 @@ dependencies = [
     "minio==7.2.0",
     "gemmi-program==0.6.5",
     "structlog>=24.1.0",
+    "pydantic==2.6.4",
 ]
 
 [tool.pdm.scripts]
 main = {call = "sqc.main:main"}
+jsonschema = {call = "sqc.validation.model:print_jsonschema"}
 
 [tool.pdm.dev-dependencies]
 dev = [

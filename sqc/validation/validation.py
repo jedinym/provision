@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 import json
 from typing import Any
 import subprocess
@@ -7,13 +6,9 @@ import csv
 from structlog import get_logger
 
 from sqc.repository import InternalError
+from sqc.validation.model import Model, Residue, Result, WorstClash
 
 logger = get_logger()
-
-
-@dataclass
-class Result:
-    residue_analysis: dict[str, Any]
 
 
 class ValidationError(Exception):
@@ -52,7 +47,7 @@ class MolProbity:
             if val == "":
                 row[key] = None
 
-    def residue_analysis(self, path: str) -> dict[str, Any]:
+    def _get_res_anal_dict(self, path: str) -> dict[str, Any]:
         output = self._residue_analysis_output(path).splitlines()
         reader = csv.DictReader(output, dialect="unix")
 
@@ -64,12 +59,60 @@ class MolProbity:
 
         return per_residue_analysis
 
+    @staticmethod
+    def _parse_residue(residue: str) -> Residue:
+        split = residue.split()
+        chain = split[0]
+        number = int(split[1])
+        type = split[2]
+        return Residue(number=number, chain=chain, residue_type=type)
+
+    def residue_analysis(self, path: str) -> list[Residue] | None:
+        all_analysis = self._get_res_anal_dict(path)
+        residues = []
+
+        for residue_id, analysis in all_analysis.items():
+            residue = self._parse_residue(residue_id)
+
+            if analysis["worst_clash"] is not None:
+                magnitude = float(analysis["worst_clash"])
+                atom = analysis["src_atom"]
+                other_atom = analysis["dst_atom"]
+                dst_residue = self._parse_residue(analysis["dst_residue"])
+
+                residue.worst_clash = WorstClash(
+                    magnitude=magnitude,
+                    atom=atom,
+                    other_atom=other_atom,
+                    other_residue=dst_residue,
+                )
+
+            residues.append(residue)
+
+        return residues
+
+
+def split_models() -> list[tuple[int, str]]:
+    """Splits multimodel PDB files into multiple files (one per model)"""
+    pass
+
 
 def validate(path: str) -> str:
     logger.debug(f"Starting validation of {path}")
-
     mp = MolProbity()
 
-    result = Result(residue_analysis=mp.residue_analysis(path))
+    # TODO:
+    # models = split_models()
 
-    return json.dumps(result.__dict__)
+    model_paths = [(1, path)]
+    models = []
+
+    for model_num, model_path in model_paths:
+        model = Model(number=model_num)
+
+        model.residues = mp.residue_analysis(model_path)
+
+        models.append(model)
+
+    result = Result(pdb_id="<placeholder>", models=models)
+    return result.model_dump_json(exclude_none=True)
