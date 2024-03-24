@@ -1,4 +1,3 @@
-import json
 from typing import Any
 import subprocess
 import csv
@@ -6,7 +5,13 @@ import csv
 from structlog import get_logger
 
 from sqc.repository import InternalError
-from sqc.validation.model import Model, Residue, Result, WorstClash
+from sqc.validation.model import (
+    Model,
+    Residue,
+    Result,
+    Status,
+    WorstClash,
+)
 
 logger = get_logger()
 
@@ -47,7 +52,7 @@ class MolProbity:
             if val == "":
                 row[key] = None
 
-    def _get_res_anal_dict(self, path: str) -> dict[str, Any]:
+    def _get_analysis_dict(self, path: str) -> dict[str, Any]:
         output = self._residue_analysis_output(path).splitlines()
         reader = csv.DictReader(output, dialect="unix")
 
@@ -68,7 +73,7 @@ class MolProbity:
         return Residue(number=number, chain=chain, residue_type=type)
 
     def residue_analysis(self, path: str) -> list[Residue] | None:
-        all_analysis = self._get_res_anal_dict(path)
+        all_analysis = self._get_analysis_dict(path)
         residues = []
 
         for residue_id, analysis in all_analysis.items():
@@ -106,13 +111,18 @@ def validate(path: str) -> str:
 
     model_paths = [(1, path)]
     models = []
+    status = Status()
 
     for model_num, model_path in model_paths:
         model = Model(number=model_num)
 
-        model.residues = mp.residue_analysis(model_path)
+        try:
+            model.residues = mp.residue_analysis(model_path)
+        except ValidationError:
+            status.residue_analysis = False
 
         models.append(model)
 
-    result = Result(pdb_id="<placeholder>", models=models)
+    status = Status()
+    result = Result(status=status, pdb_id="<placeholder>", models=models)
     return result.model_dump_json(exclude_none=True)

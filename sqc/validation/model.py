@@ -22,7 +22,12 @@ class Model(BaseModel):
     residues: list[Residue] | None = None
 
 
+class Status(BaseModel):
+    residue_analysis: bool = True
+
+
 class Result(BaseModel):
+    status: Status
     pdb_id: str
     models: list[Model]
 
