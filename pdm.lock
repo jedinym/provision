@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = ["cross_platform"]
 lock_version = "4.4.1"
-content_hash = "sha256:74d32fc0e568f61872c14c2342cc4f2082b273b18087e9182e6939de2723a221"
+content_hash = "sha256:82ff790138e4a1dfb390a4049f868861c7378ed72ac1d71fa5d619f82a21913c"
 
 [[package]]
 name = "amqp"
@@ -73,6 +73,28 @@ files = [
     {file = "argon2_cffi_bindings-21.2.0-pp38-pypy38_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:20ef543a89dee4db46a1a6e206cd015360e5a75822f76df533845c3cbaf72670"},
     {file = "argon2_cffi_bindings-21.2.0-pp38-pypy38_pp73-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:ed2937d286e2ad0cc79a7087d3c272832865f779430e0cc2b4f3718d3159b0cb"},
     {file = "argon2_cffi_bindings-21.2.0-pp38-pypy38_pp73-win_amd64.whl", hash = "sha256:5e00316dabdaea0b2dd82d141cc66889ced0cdcbfa599e8b471cf22c620c329a"},
+]
+
+[[package]]
+name = "biopython"
+version = "1.83"
+requires_python = ">=3.8"
+summary = "Freely available tools for computational molecular biology."
+dependencies = [
+    "numpy",
+]
+files = [
+    {file = "biopython-1.83-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:a01dfdad7210f2fd5c4f36606278f91dbfdda6dac02347206d13cc618e79fe32"},
+    {file = "biopython-1.83-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:3686ff61df3f24ecf6f23826e4fe5172c5e5f745099bc8fbb176f5304582f88f"},
+    {file = "biopython-1.83-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:c756c0b81702c705141c87c2805203df01c6d4cf290e8cefd48cbc61a3c85b82"},
+    {file = "biopython-1.83-cp311-cp311-win32.whl", hash = "sha256:0496f2a6e6e060d8ff0f34784ad15ed342b10cfe282020efe168286f0c14c479"},
+    {file = "biopython-1.83-cp311-cp311-win_amd64.whl", hash = "sha256:8552cc467429b555c604b84fc174c33923bf7e4c735774eda505f1d5a9c2feab"},
+    {file = "biopython-1.83-cp312-cp312-macosx_10_9_x86_64.whl", hash = "sha256:0d5ce14755a6b49dea4743cf6929570afe5becb66ad222194984c7bf04218f86"},
+    {file = "biopython-1.83-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:29708772651d930e808cd24c519fd4f39b2e719668944c0aa1eaf0b1deef9f48"},
+    {file = "biopython-1.83-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:0b35aa095de0fa8339b70664797d0e83322a1a9d512e2fd52d4e872df5189f56"},
+    {file = "biopython-1.83-cp312-cp312-win32.whl", hash = "sha256:118425a210cb3d184c7a78154c5646089366faf124cd46c6056ca7f9302b94ad"},
+    {file = "biopython-1.83-cp312-cp312-win_amd64.whl", hash = "sha256:ca94e8ea8907de841a515af55acb1922a9de99b3144c738a193f2a75e4726078"},
+    {file = "biopython-1.83.tar.gz", hash = "sha256:78e6bfb78de63034037afd35fe77cb6e0a9e5b62706becf78a7d922b16ed83f7"},
 ]
 
 [[package]]
@@ -255,6 +277,34 @@ dependencies = [
 files = [
     {file = "minio-7.2.0-py3-none-any.whl", hash = "sha256:10656272c16156fa08436ce2b27e25e4134ef5142a8c259513ee26fb514531a6"},
     {file = "minio-7.2.0.tar.gz", hash = "sha256:4b015b018d10c1505f7c3e724fa7c2267760ac7bee6463a624cbf22cd272877b"},
+]
+
+[[package]]
+name = "numpy"
+version = "1.26.4"
+requires_python = ">=3.9"
+summary = "Fundamental package for array computing in Python"
+files = [
+    {file = "numpy-1.26.4-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:4c66707fabe114439db9068ee468c26bbdf909cac0fb58686a42a24de1760c71"},
+    {file = "numpy-1.26.4-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:edd8b5fe47dab091176d21bb6de568acdd906d1887a4584a15a9a96a1dca06ef"},
+    {file = "numpy-1.26.4-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:7ab55401287bfec946ced39700c053796e7cc0e3acbef09993a9ad2adba6ca6e"},
+    {file = "numpy-1.26.4-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:666dbfb6ec68962c033a450943ded891bed2d54e6755e35e5835d63f4f6931d5"},
+    {file = "numpy-1.26.4-cp311-cp311-musllinux_1_1_aarch64.whl", hash = "sha256:96ff0b2ad353d8f990b63294c8986f1ec3cb19d749234014f4e7eb0112ceba5a"},
+    {file = "numpy-1.26.4-cp311-cp311-musllinux_1_1_x86_64.whl", hash = "sha256:60dedbb91afcbfdc9bc0b1f3f402804070deed7392c23eb7a7f07fa857868e8a"},
+    {file = "numpy-1.26.4-cp311-cp311-win32.whl", hash = "sha256:1af303d6b2210eb850fcf03064d364652b7120803a0b872f5211f5234b399f20"},
+    {file = "numpy-1.26.4-cp311-cp311-win_amd64.whl", hash = "sha256:cd25bcecc4974d09257ffcd1f098ee778f7834c3ad767fe5db785be9a4aa9cb2"},
+    {file = "numpy-1.26.4-cp312-cp312-macosx_10_9_x86_64.whl", hash = "sha256:b3ce300f3644fb06443ee2222c2201dd3a89ea6040541412b8fa189341847218"},
+    {file = "numpy-1.26.4-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:03a8c78d01d9781b28a6989f6fa1bb2c4f2d51201cf99d3dd875df6fbd96b23b"},
+    {file = "numpy-1.26.4-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:9fad7dcb1aac3c7f0584a5a8133e3a43eeb2fe127f47e3632d43d677c66c102b"},
+    {file = "numpy-1.26.4-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:675d61ffbfa78604709862923189bad94014bef562cc35cf61d3a07bba02a7ed"},
+    {file = "numpy-1.26.4-cp312-cp312-musllinux_1_1_aarch64.whl", hash = "sha256:ab47dbe5cc8210f55aa58e4805fe224dac469cde56b9f731a4c098b91917159a"},
+    {file = "numpy-1.26.4-cp312-cp312-musllinux_1_1_x86_64.whl", hash = "sha256:1dda2e7b4ec9dd512f84935c5f126c8bd8b9f2fc001e9f54af255e8c5f16b0e0"},
+    {file = "numpy-1.26.4-cp312-cp312-win32.whl", hash = "sha256:50193e430acfc1346175fcbdaa28ffec49947a06918b7b92130744e81e640110"},
+    {file = "numpy-1.26.4-cp312-cp312-win_amd64.whl", hash = "sha256:08beddf13648eb95f8d867350f6a018a4be2e5ad54c8d8caed89ebca558b2818"},
+    {file = "numpy-1.26.4-pp39-pypy39_pp73-macosx_10_9_x86_64.whl", hash = "sha256:afedb719a9dcfc7eaf2287b839d8198e06dcd4cb5d276a3df279231138e83d30"},
+    {file = "numpy-1.26.4-pp39-pypy39_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:95a7476c59002f2f6c590b9b7b998306fba6a5aa646b1e22ddfeaf8f78c3a29c"},
+    {file = "numpy-1.26.4-pp39-pypy39_pp73-win_amd64.whl", hash = "sha256:7e50d0a0cc3189f9cb0aeb3a6a6af18c16f59f004b866cd2be1c14b36134a4a0"},
+    {file = "numpy-1.26.4.tar.gz", hash = "sha256:2a02aba9ed12e4ac4eb3ea9421c420301a0c6460d9830d74a9df87efa4912010"},
 ]
 
 [[package]]

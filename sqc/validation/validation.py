@@ -4,7 +4,9 @@ import csv
 
 from structlog import get_logger
 
+
 from sqc.repository import InternalError
+from sqc.validation.io import get_pdb_id, split_models
 from sqc.validation.model import (
     Model,
     Residue,
@@ -73,6 +75,7 @@ class MolProbity:
         return Residue(number=number, chain=chain, residue_type=type)
 
     def residue_analysis(self, path: str) -> list[Residue] | None:
+        logger.debug("Running residue-analysis", path=path)
         all_analysis = self._get_analysis_dict(path)
         residues = []
 
@@ -97,21 +100,14 @@ class MolProbity:
         return residues
 
 
-def split_models() -> list[tuple[int, str]]:
-    """Splits multimodel PDB files into multiple files (one per model)"""
-    pass
-
-
 def validate(path: str) -> str:
     logger.debug(f"Starting validation of {path}")
-    mp = MolProbity()
-
-    # TODO:
-    # models = split_models()
-
-    model_paths = [(1, path)]
-    models = []
+    pdb_id = get_pdb_id(path) or "unknown_pdb_id"
+    model_paths = split_models(path)
+    output_models = []
     status = Status()
+
+    mp = MolProbity()
 
     for model_num, model_path in model_paths:
         model = Model(number=model_num)
@@ -121,8 +117,8 @@ def validate(path: str) -> str:
         except ValidationError:
             status.residue_analysis = False
 
-        models.append(model)
+        output_models.append(model)
 
     status = Status()
-    result = Result(status=status, pdb_id="<placeholder>", models=models)
+    result = Result(status=status, pdb_id=pdb_id, models=output_models)
     return result.model_dump_json(exclude_none=True)

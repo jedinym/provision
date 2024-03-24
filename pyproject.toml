@@ -8,6 +8,7 @@ dependencies = [
     "gemmi-program==0.6.5",
     "structlog>=24.1.0",
     "pydantic==2.6.4",
+    "biopython==1.83",
 ]
 
 [tool.pdm.scripts]
