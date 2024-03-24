@@ -38,6 +38,7 @@ def split_models(path: str) -> list[tuple[int, str]]:
         io.save(new_path, select=selector)
         models.append((model.serial_num, new_path))
 
-    logger.debug("Split models into new PDB files", paths=models)
+    if len(models) != 1:
+        logger.debug("Split models into new PDB files", paths=models)
 
     return models
