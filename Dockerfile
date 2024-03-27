@@ -41,10 +41,10 @@ RUN mkdir -p modules/chem_data
 
 WORKDIR /molprobity/modules/chem_data
 
-RUN git clone --depth 1 https://github.com/phenix-project/geostd.git && \
-    git clone --depth 1 https://github.com/rlabduke/mon_lib.git && \
-    git clone --depth 1 https://github.com/rlabduke/rotarama_data.git && \
-    git clone --depth 1 https://github.com/rlabduke/cablam_data.git
+RUN git clone --single-branch https://github.com/sb-ncbr/geostd.git && \
+    git clone --single-branch https://github.com/sb-ncbr/mon_lib.git && \
+    git clone --single-branch https://github.com/sb-ncbr/rotarama_data.git && \
+    git clone --single-branch https://github.com/sb-ncbr/cablam_data.git
 
 RUN mkdir rama_z && \
     wget --progress=dot:giga -O rama_z/top8000_rama_z_dict.pkl \
