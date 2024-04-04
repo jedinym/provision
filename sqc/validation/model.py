@@ -22,8 +22,22 @@ class Model(BaseModel):
     residues: list[Residue] | None = None
 
 
+class DataVersion(BaseModel):
+    url: str
+    commit_sha: str
+
+
+class MolProbityVersions(BaseModel):
+    geostd_version: DataVersion
+    mon_lib_version: DataVersion
+    rotarama_version: DataVersion
+    cablam_version: DataVersion
+    rama_z_version: DataVersion
+
+
 class Status(BaseModel):
     residue_analysis: bool = True
+    molprobity_versions: MolProbityVersions
 
 
 class Result(BaseModel):

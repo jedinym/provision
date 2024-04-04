@@ -9,6 +9,7 @@ dependencies = [
     "structlog>=24.1.0",
     "pydantic==2.6.4",
     "biopython==1.83",
+    "gitpython>=3.1.42",
 ]
 
 [tool.pdm.scripts]

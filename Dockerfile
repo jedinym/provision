@@ -44,11 +44,8 @@ WORKDIR /molprobity/modules/chem_data
 RUN git clone --single-branch https://github.com/sb-ncbr/geostd.git && \
     git clone --single-branch https://github.com/sb-ncbr/mon_lib.git && \
     git clone --single-branch https://github.com/sb-ncbr/rotarama_data.git && \
-    git clone --single-branch https://github.com/sb-ncbr/cablam_data.git
-
-RUN mkdir rama_z && \
-    wget --progress=dot:giga -O rama_z/top8000_rama_z_dict.pkl \
-            https://github.com/rlabduke/reference_data/raw/master/Top8000/rama_z/top8000_rama_z_dict.pkl
+    git clone --single-branch https://github.com/sb-ncbr/cablam_data.git && \
+    git clone --single-branch https://github.com/sb-ncbr/rama_z_data rama_z
 
 WORKDIR /molprobity
 
@@ -63,7 +60,8 @@ FROM base
 RUN useradd -ms /bin/bash sqc && \
     mkdir /pyenv && \
     mkdir /src && \
-    chown sqc /src
+    chown sqc /src && \
+    chown -R sqc /molprobity/
 
 # setup pyenv
 RUN git clone https://github.com/pyenv/pyenv.git /pyenv

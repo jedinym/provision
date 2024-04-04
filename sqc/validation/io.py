@@ -25,9 +25,14 @@ def get_pdb_id(path: str) -> str | None:
 
 def split_models(path: str) -> list[tuple[int, str]]:
     """Splits multimodel PDB files into multiple files (one per model)"""
-    pdb_id = get_pdb_id(path) or "unknown_pdb_id"
     parser = PDBParser()
+    pdb_id = get_pdb_id(path) or "unknown_pdb_id"
     structure = parser.get_structure(pdb_id, path)
+
+    # use original file if it contains only one model
+    if len(list(structure.get_models())) == 1:
+        return [(1, path)]
+
     io = PDBIO()
     io.set_structure(structure)
     models = []
@@ -38,7 +43,6 @@ def split_models(path: str) -> list[tuple[int, str]]:
         io.save(new_path, select=selector)
         models.append((model.serial_num, new_path))
 
-    if len(models) != 1:
-        logger.debug("Split models into new PDB files", paths=models)
+    logger.debug("Split models into new PDB files", paths=models)
 
     return models
