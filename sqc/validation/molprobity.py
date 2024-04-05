@@ -10,6 +10,8 @@ from sqc.validation.model import (
     DataVersion,
     MolProbityVersions,
     Residue,
+    WorstBondAngle,
+    WorstBondLength,
     WorstClash,
 )
 
@@ -98,6 +100,28 @@ class MolProbity:
             rama_z_version=self._get_data_version(self.rama_z_repo),
         )
 
+    def _parse_worst_length(self, analysis: dict[str, Any]) -> WorstBondLength:
+        first_atom, second_atom = analysis["worst_length"].split("--")
+        length = analysis["worst_length_value"]
+        sigma = analysis["worst_length_sigma"]
+
+        return WorstBondLength(
+            first_atom=first_atom, second_atom=second_atom, length=length, sigma=sigma
+        )
+
+    def _parse_worst_angle(self, analysis: dict[str, Any]) -> WorstBondAngle:
+        first_atom, second_atom, third_atom = analysis["worst_angle"].split("-")
+        angle = analysis["worst_angle_value"]
+        sigma = analysis["worst_angle_sigma"]
+
+        return WorstBondAngle(
+            first_atom=first_atom,
+            second_atom=second_atom,
+            third_atom=third_atom,
+            angle=angle,
+            sigma=sigma,
+        )
+
     def residue_analysis(self, path: str) -> list[Residue] | None:
         logger.debug("Running residue-analysis", path=path)
         all_analysis = self._get_analysis_dict(path)
@@ -108,8 +132,8 @@ class MolProbity:
 
             if analysis["worst_clash"] is not None:
                 magnitude = float(analysis["worst_clash"])
-                atom = analysis["src_atom"]
-                other_atom = analysis["dst_atom"]
+                atom = analysis["src_atom"].strip()
+                other_atom = analysis["dst_atom"].strip()
                 dst_residue = self._parse_residue(analysis["dst_residue"])
 
                 residue.worst_clash = WorstClash(
@@ -118,6 +142,14 @@ class MolProbity:
                     other_atom=other_atom,
                     other_residue=dst_residue,
                 )
+
+            if analysis["num_length_out"] is not None:
+                residue.bond_length_outlier_count = int(analysis["num_length_out"])
+                residue.worst_bond_length = self._parse_worst_length(analysis)
+
+            if analysis["num_angle_out"] is not None:
+                residue.bond_angle_outlier_count = int(analysis["num_angle_out"])
+                residue.worst_bond_angle = self._parse_worst_angle(analysis)
 
             residues.append(residue)
 

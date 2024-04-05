@@ -10,11 +10,30 @@ class WorstClash(BaseModel):
     other_residue: "Residue"
 
 
+class WorstBondLength(BaseModel):
+    first_atom: str
+    second_atom: str
+    length: float
+    sigma: float
+
+
+class WorstBondAngle(BaseModel):
+    first_atom: str
+    second_atom: str
+    third_atom: str
+    angle: float
+    sigma: float
+
+
 class Residue(BaseModel):
     number: int
     chain: str
     residue_type: str
     worst_clash: WorstClash | None = None
+    bond_length_outlier_count: int | None = None
+    worst_bond_length: WorstBondLength | None = None
+    bond_angle_outlier_count: int | None = None
+    worst_bond_angle: WorstBondAngle | None = None
 
 
 class Model(BaseModel):
