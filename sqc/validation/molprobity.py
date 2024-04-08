@@ -7,6 +7,8 @@ import git
 
 from sqc.repository import InternalError
 from sqc.validation.model import (
+    Atom,
+    Clash,
     DataVersion,
     MolProbityVersions,
     OmegaTorsion,
@@ -56,6 +58,24 @@ class MolProbity:
             logger.error(
                 "residue-analysis exited with non-zero code", stderr=proc.stderr
             )
+            raise InternalError()
+
+        return proc.stdout.decode(encoding="utf-8")
+
+    def _clashscore_output(self, path: str) -> str:
+        try:
+            proc = subprocess.run(
+                ["clashscore", path], capture_output=True, timeout=self.timeout
+            )
+        except subprocess.TimeoutExpired:
+            logger.warning(
+                "Failed to run molprobity clashscore in time",
+                timeout=self.timeout,
+            )
+            raise MolProbityError("Failed to run residue analysis in time")
+
+        if proc.returncode != 0:
+            logger.error("clashscore exited with non-zero code", stderr=proc.stderr)
             raise InternalError()
 
         return proc.stdout.decode(encoding="utf-8")
@@ -124,7 +144,43 @@ class MolProbity:
             sigma=sigma,
         )
 
-    def residue_analysis(self, path: str) -> list[Residue] | None:
+    @staticmethod
+    def _parse_clash_atom(raw: list[str]) -> Atom:
+        """
+        Parse a clash atom from molprobity clashscore output
+
+        Input example: ["A", "9", "LYS", "CA"]
+        Output: Atom(chain="A", residue_number=9, atom="CA")
+        """
+        chain = raw[0]
+        residue_number = int(raw[1])
+        atom = raw[3]
+        return Atom(chain=chain, residue_number=residue_number, atom=atom)
+
+    def clashscore(self, path: str) -> list[Clash]:
+        logger.debug("Running clashscore", path=path)
+        output = self._clashscore_output(path)
+        clashes = []
+
+        # drop MolProbity garbage from output lines
+        for clash_line in output.splitlines()[4:-2]:
+            split_line = list(map(str.strip, clash_line.split()))
+
+            first_atom = self._parse_clash_atom(split_line[:4])
+            second_atom = self._parse_clash_atom(split_line[4:8])
+
+            # remove colon from magnitude field
+            magnitude = float(split_line[8][1:])
+
+            clashes.append(
+                Clash(
+                    first_atom=first_atom, second_atom=second_atom, magnitude=magnitude
+                )
+            )
+
+        return clashes
+
+    def residue_analysis(self, path: str) -> list[Residue]:
         logger.debug("Running residue-analysis", path=path)
         all_analysis = self._get_analysis_dict(path)
         residues = []

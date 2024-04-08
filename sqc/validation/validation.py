@@ -33,6 +33,11 @@ def validate(path: str) -> str:
         except MolProbityError:
             status.residue_analysis = False
 
+        try:
+            model.clashes = mp.clashscore(model_path)
+        except MolProbityError:
+            status.clashscore = False
+
         output_models.append(model)
 
     result = Result(status=status, pdb_id=pdb_id, models=output_models)

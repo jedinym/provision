@@ -47,9 +47,22 @@ class Residue(BaseModel):
     rama_torsion: RamaTorsion | None = None
 
 
+class Atom(BaseModel):
+    residue_number: int
+    chain: str
+    atom: str
+
+
+class Clash(BaseModel):
+    first_atom: Atom
+    second_atom: Atom
+    magnitude: float
+
+
 class Model(BaseModel):
     number: int
     residues: list[Residue] | None = None
+    clashes: list[Clash] | None = None
 
 
 class DataVersion(BaseModel):
@@ -67,6 +80,7 @@ class MolProbityVersions(BaseModel):
 
 class Status(BaseModel):
     residue_analysis: bool = True
+    clashscore: bool = True
     molprobity_versions: MolProbityVersions
 
 
