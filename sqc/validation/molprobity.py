@@ -9,6 +9,8 @@ from sqc.repository import InternalError
 from sqc.validation.model import (
     DataVersion,
     MolProbityVersions,
+    OmegaTorsion,
+    RamaTorsion,
     Residue,
     WorstBondAngle,
     WorstBondLength,
@@ -150,6 +152,18 @@ class MolProbity:
             if analysis["num_angle_out"] is not None:
                 residue.bond_angle_outlier_count = int(analysis["num_angle_out"])
                 residue.worst_bond_angle = self._parse_worst_angle(analysis)
+
+            if analysis["omega"] is not None:
+                angle = float(analysis["omega"])
+                angle_range = analysis["omega_eval"]
+                residue.omega_torsion = OmegaTorsion(
+                    angle=angle, angle_range=angle_range
+                )
+
+            if analysis["rama_eval"] is not None:
+                residue.rama_torsion = RamaTorsion(
+                    angle_combo_range=analysis["rama_eval"]
+                )
 
             residues.append(residue)
 

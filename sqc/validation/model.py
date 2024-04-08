@@ -25,6 +25,15 @@ class WorstBondAngle(BaseModel):
     sigma: float
 
 
+class OmegaTorsion(BaseModel):
+    angle_range: str
+    angle: float
+
+
+class RamaTorsion(BaseModel):
+    angle_combo_range: str
+
+
 class Residue(BaseModel):
     number: int
     chain: str
@@ -34,6 +43,8 @@ class Residue(BaseModel):
     worst_bond_length: WorstBondLength | None = None
     bond_angle_outlier_count: int | None = None
     worst_bond_angle: WorstBondAngle | None = None
+    omega_torsion: OmegaTorsion | None = None
+    rama_torsion: RamaTorsion | None = None
 
 
 class Model(BaseModel):
