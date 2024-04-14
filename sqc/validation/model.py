@@ -34,6 +34,11 @@ class RamaTorsion(BaseModel):
     angle_combo_range: str
 
 
+class SidechainTorsion(BaseModel):
+    angle_range: str
+    rotamer: str
+
+
 class Residue(BaseModel):
     number: int
     chain: str
@@ -45,6 +50,7 @@ class Residue(BaseModel):
     worst_bond_angle: WorstBondAngle | None = None
     omega_torsion: OmegaTorsion | None = None
     rama_torsion: RamaTorsion | None = None
+    sidechain_torsion: SidechainTorsion | None = None
 
 
 class Atom(BaseModel):

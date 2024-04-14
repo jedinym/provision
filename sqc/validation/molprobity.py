@@ -14,6 +14,7 @@ from sqc.validation.model import (
     OmegaTorsion,
     RamaTorsion,
     Residue,
+    SidechainTorsion,
     WorstBondAngle,
     WorstBondLength,
     WorstClash,
@@ -219,6 +220,12 @@ class MolProbity:
             if analysis["rama_eval"] is not None:
                 residue.rama_torsion = RamaTorsion(
                     angle_combo_range=analysis["rama_eval"]
+                )
+
+            if analysis["rotamer_eval"] is not None:
+                residue.sidechain_torsion = SidechainTorsion(
+                    angle_range=analysis["rotamer_eval"],
+                    rotamer=analysis["rotamer"]
                 )
 
             residues.append(residue)
