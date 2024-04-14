@@ -124,16 +124,16 @@ class MinioRepo:
 
         return new_path
 
-    def download_request(self, request: str) -> str:
+    def download_request(self, request: str) -> tuple[str, str]:
         logger.debug(f"Fetching request")
-        path, ftype = self._download_request(request)
+        path, ftype, filename = self._download_request(request)
         if ftype != "pdb":
             path = MinioRepo._convert_to_pdb(path)
 
-        return path
+        return path, filename
 
     @mask_minio_action("download_request")
-    def _download_request(self, request: str) -> tuple[str, str]:
+    def _download_request(self, request: str) -> tuple[str, str, str]:
         stat = self.minio.stat_object(self.request_bucket, request)
         if not stat.metadata:
             logger.error(f"Request does not contain metadata")
@@ -144,9 +144,10 @@ class MinioRepo:
             logger.error(f"Request does not contain file type")
             raise InternalError()
 
+        filename = stat.metadata.get("X-Amz-Meta-Filename", "unknown")
         path = f"{request}.{ftype}"
         self.minio.fget_object(self.request_bucket, request, path)
-        return path, ftype
+        return path, ftype, filename
 
     @mask_minio_action("delete_request", raise_error=False)
     def delete_request(self, request: str) -> None:

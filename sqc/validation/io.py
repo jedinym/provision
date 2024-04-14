@@ -20,7 +20,7 @@ class ModelSelector(Select):
 def get_pdb_id(path: str) -> str | None:
     with open(path, "r") as pdb_file:
         header = parse_pdb_header(pdb_file)
-        return header.get("name")
+        return header.get("idcode", "unknown")
 
 
 def split_models(path: str) -> list[tuple[int, str]]:

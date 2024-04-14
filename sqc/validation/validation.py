@@ -16,7 +16,7 @@ class ValidationError(Exception):
         super().__init__(*args)
 
 
-def validate(path: str) -> str:
+def validate(path: str, filename: str) -> str:
     logger.debug(f"Starting validation of {path}")
     pdb_id = get_pdb_id(path) or "unknown_pdb_id"
     model_paths = split_models(path)
@@ -40,5 +40,7 @@ def validate(path: str) -> str:
 
         output_models.append(model)
 
-    result = Result(status=status, pdb_id=pdb_id, models=output_models)
+    result = Result(
+        status=status, filename=filename, pdb_id=pdb_id, models=output_models
+    )
     return result.model_dump_json(exclude_none=True)

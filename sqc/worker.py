@@ -45,8 +45,8 @@ class Worker(ConsumerMixin):
 
         resp: SQCResponse | None = None
         try:
-            path = self.repo.download_request(request)
-            result = validate(path)
+            path, filename = self.repo.download_request(request)
+            result = validate(path, filename)
             resp = SQCResponse.ok(result)
         except (ValidationError, ConversionError) as err:
             resp = SQCResponse.err(str(err))

@@ -87,6 +87,7 @@ class Status(BaseModel):
 class Result(BaseModel):
     status: Status
     pdb_id: str
+    filename: str
     models: list[Model]
 
 
