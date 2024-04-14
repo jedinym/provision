@@ -224,8 +224,7 @@ class MolProbity:
 
             if analysis["rotamer_eval"] is not None:
                 residue.sidechain_torsion = SidechainTorsion(
-                    angle_range=analysis["rotamer_eval"],
-                    rotamer=analysis["rotamer"]
+                    angle_range=analysis["rotamer_eval"], rotamer=analysis["rotamer"]
                 )
 
             residues.append(residue)
