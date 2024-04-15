@@ -15,10 +15,12 @@ dependencies = [
 [tool.pdm.scripts]
 main = {call = "sqc.main:main"}
 jsonschema = {call = "sqc.validation.model:print_jsonschema"}
+compare = {call = "scripts.compare:main"}
 
 [tool.pdm.dev-dependencies]
 dev = [
     "kubernetes>=29.0.0",
+    "git+git@github.com:sb-ncbr/sqclib.git"
 ]
 [build-system]
 requires = ["pdm-backend"]

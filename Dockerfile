@@ -84,7 +84,7 @@ RUN python -m venv venv
 ENV PATH="venv/bin:$PATH"
 
 RUN python -m pip install --no-cache-dir pdm==2.12.4 && \
-    pdm install
+    pdm install --prod
 
 COPY sqc sqc
 
