@@ -4,5 +4,8 @@ __pycache__/
 venv/
 .mypy_cache/
 .python-version
+
 test-data/
+comparison-data/
+
 .pdm-python
