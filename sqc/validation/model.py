@@ -43,7 +43,7 @@ class Residue(BaseModel):
     number: int
     chain: str
     residue_type: str
-    alt_code: str | None
+    alt_code: str | None = None
     worst_clash: WorstClash | None = None
     bond_length_outlier_count: int | None = None
     worst_bond_length: WorstBondLength | None = None

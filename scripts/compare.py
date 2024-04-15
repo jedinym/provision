@@ -24,11 +24,12 @@ def find_pdb_residue(
 ) -> ET.Element | None:
     for pdb_residue in pdb_residues:
         attrib = pdb_residue.attrib
+        sqc_alt_code = " " if not sqc_residue.alt_code else sqc_residue.alt_code
         if (
             attrib["resname"] == sqc_residue.residue_type
             and attrib["resnum"] == str(sqc_residue.number)
             and attrib["chain"] == sqc_residue.chain
-            and attrib["altcode"] == sqc_residue.alt_code
+            and attrib["altcode"] == sqc_alt_code
         ):
             return pdb_residue
 
