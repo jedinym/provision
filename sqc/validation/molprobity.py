@@ -227,6 +227,14 @@ class MolProbity:
                     angle_range=analysis["rotamer_eval"], rotamer=analysis["rotamer"]
                 )
 
-            residues.append(residue)
+            # skip residue if no outliers found
+            if (
+                residue.bond_angle_outlier_count is not None
+                or residue.bond_length_outlier_count is not None
+                or residue.omega_torsion is not None
+                or residue.sidechain_torsion is not None
+                or residue.rama_torsion is not None
+            ):
+                residues.append(residue)
 
         return residues
