@@ -35,6 +35,8 @@ class MolProbity:
     CABLAM_DATA_REPO_PATH = "/molprobity/modules/chem_data/cablam_data"
     RAMA_Z_REPO_PATH = "/molprobity/modules/chem_data/rama_z"
 
+    CLASHSCORE_LINE_ATOMS_LEN = 34
+
     def __init__(self, timeout=600) -> None:
         self.timeout = timeout
         self.geostd_repo = git.Repo(self.GEOSTD_REPO_PATH)
@@ -103,10 +105,25 @@ class MolProbity:
     @staticmethod
     def _parse_residue(residue: str) -> Residue:
         split = residue.split()
-        chain = split[0].strip()
-        number = int(split[1].strip())
-        type = split[2].strip()
-        return Residue(number=number, chain=chain, residue_type=type)
+
+        # When the residue number is 4 digits long, it gets joined with the
+        # chain ID in the residue-analysis output. "X1194 TYR" instead of
+        # "X 1194 TYR"
+        if len(split) == 2:
+            chain = split[0][0]
+            number = int(split[0][1:])
+            type = split[1].strip()
+        else:
+            chain = split[0].strip()
+            number = int(split[1].strip())
+            type = split[2].strip()
+
+        alt_code = None
+        if len(type) != 3:
+            alt_code = type[: len(type) - 3]
+            type = type[len(alt_code) :]
+
+        return Residue(number=number, chain=chain, residue_type=type, alt_code=alt_code)
 
     @staticmethod
     def _get_data_version(repo: git.Repo) -> DataVersion:
@@ -146,16 +163,35 @@ class MolProbity:
         )
 
     @staticmethod
-    def _parse_clash_atom(raw: list[str]) -> Atom:
+    def _parse_clash_atom(raw: str) -> Atom:
         """
         Parse a clash atom from molprobity clashscore output
 
-        Input example: ["A", "9", "LYS", "CA"]
-        Output: Atom(chain="A", residue_number=9, atom="CA")
+        When the residue number is 4 digits long, it gets joined with the
+        chain ID in the output. "X1194 TYR G2" instead of
+        "X 1194 TYR G2"
+
+        Input examples:
+            - "A   9  LYS  CA"
+            - "X1034  ASP  C"
+
+        Outputs:
+            - Atom(chain="A", residue_number=9, atom="CA")
+            - Atom(chain="X", residue_number=1034, atom="C")
         """
         chain = raw[0]
-        residue_number = int(raw[1])
-        atom = raw[3]
+        split = raw.split()
+
+        # chain is 5 characters long only when the residue
+        # number invades its space
+        if len(raw.split()[0]) == 5:
+            chain = chain[0]
+            residue_number = int(split[0][1:])
+            atom = split[2]
+        else:
+            residue_number = int(split[1])
+            atom = split[3]
+
         return Atom(chain=chain, residue_number=residue_number, atom=atom)
 
     def clashscore(self, path: str) -> list[Clash]:
@@ -163,15 +199,27 @@ class MolProbity:
         output = self._clashscore_output(path)
         clashes = []
 
-        # drop MolProbity garbage from output lines
-        for clash_line in output.splitlines()[4:-2]:
-            split_line = list(map(str.strip, clash_line.split()))
+        # since the clashscore program has no specified output format,
+        # we need to do ugly magic to the output to remove garbage
+        # TODO: refactor this to make it more apparent
+        output_lines = output.splitlines()[:-2]
+        if "hydrogen addition" in output_lines[2]:
+            garbage_lines = 5
+        else:
+            garbage_lines = 4
 
-            first_atom = self._parse_clash_atom(split_line[:4])
-            second_atom = self._parse_clash_atom(split_line[4:8])
+        for clash_line in output_lines[garbage_lines:]:
+            first_atom_part = clash_line[: self.CLASHSCORE_LINE_ATOMS_LEN // 2].strip()
+
+            second_atom_part = clash_line[
+                (self.CLASHSCORE_LINE_ATOMS_LEN // 2) + 1 :
+            ].strip()
+
+            first_atom = self._parse_clash_atom(first_atom_part)
+            second_atom = self._parse_clash_atom(second_atom_part)
 
             # remove colon from magnitude field
-            magnitude = float(split_line[8][1:])
+            magnitude = float(clash_line[self.CLASHSCORE_LINE_ATOMS_LEN + 1 :])
 
             clashes.append(
                 Clash(

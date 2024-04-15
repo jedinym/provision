@@ -103,7 +103,7 @@ class MinioRepo:
 
     @staticmethod
     def _convert_to_pdb(path: str) -> str:
-        new_path = f"{path.split('.')[-1]}.pdb"
+        new_path = f"{path.split('.')[0]}.pdb"
         logger.debug(f"Converting {path} to PDB format")
 
         try:
@@ -116,7 +116,7 @@ class MinioRepo:
 
         if proc.returncode != 0:
             logger.info(
-                f"Failed to convert MMCIF to PDB format",
+                "Failed to convert MMCIF to PDB format",
                 gemmi_msg=str(proc.stderr),
                 path=path,
             )
@@ -125,7 +125,6 @@ class MinioRepo:
         return new_path
 
     def download_request(self, request: str) -> tuple[str, str]:
-        logger.debug(f"Fetching request")
         path, ftype, filename = self._download_request(request)
         if ftype != "pdb":
             path = MinioRepo._convert_to_pdb(path)
@@ -147,6 +146,8 @@ class MinioRepo:
         filename = stat.metadata.get("X-Amz-Meta-Filename", "unknown")
         path = f"{request}.{ftype}"
         self.minio.fget_object(self.request_bucket, request, path)
+
+        logger.info("Fetched request", metadata=stat.metadata)
         return path, ftype, filename
 
     @mask_minio_action("delete_request", raise_error=False)

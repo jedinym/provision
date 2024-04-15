@@ -28,6 +28,7 @@ def find_pdb_residue(
             attrib["resname"] == sqc_residue.residue_type
             and attrib["resnum"] == str(sqc_residue.number)
             and attrib["chain"] == sqc_residue.chain
+            and attrib["altcode"] == sqc_residue.alt_code
         ):
             return pdb_residue
 
@@ -46,7 +47,8 @@ def compare_results(sqc_results, pdb_results: ET.ElementTree) -> list[Discrepanc
         pdb_residue = find_pdb_residue(residue, subgroups)
         if pdb_residue is None:
             print(
-                f"ERROR: Could not find residue {residue} in XML file", file=sys.stderr
+                f"ERROR: Could not find {residue.chain} {residue.number} {residue.residue_type} in XML file",
+                file=sys.stderr,
             )
             continue
 
@@ -105,11 +107,10 @@ def main():
     client = sqclib.SQCClient("localhost:9000", "minioadmin", "minioadmin", False)
 
     for structure, report in pairs:
+        print(f"INFO: comparing pair {(structure, report)}")
         pdb_id = os.path.basename(structure)[:4]
         pdb_results = ET.parse(report)
         sqc_results = client.validate(structure)
-
-        print(f"INFO: comparing pair {(structure, report)}")
 
         discrepancies = compare_results(sqc_results, pdb_results)
         if discrepancies:
