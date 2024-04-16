@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import pprint
 from typing import Any
 import json
 import os
@@ -13,10 +14,21 @@ from sqc.validation.model import Residue, Result
 
 @dataclass
 class Discrepancy:
-    residue: Residue
+    residue: str
     name: str
     sqc_value: Any
     pdb_value: Any
+
+
+def mk_discrepancy(
+    residue: Residue, name: str, sqc_value: Any, pdb_value: Any
+) -> Discrepancy:
+    return Discrepancy(
+        residue=f"{residue.chain} {residue.number} {residue.residue_type} {residue.alt_code}",
+        name=name,
+        sqc_value=sqc_value,
+        pdb_value=pdb_value,
+    )
 
 
 def find_pdb_residue(
@@ -48,7 +60,8 @@ def compare_results(sqc_results, pdb_results: ET.ElementTree) -> list[Discrepanc
         pdb_residue = find_pdb_residue(residue, subgroups)
         if pdb_residue is None:
             print(
-                f"ERROR: Could not find {residue.chain} {residue.number} {residue.residue_type} in XML file",
+                f"ERROR: Could not find {residue.chain} {residue.number} {residue.residue_type} "
+                f"{f'alt: {residue.alt_code}' if residue.alt_code else ''} in XML file",
                 file=sys.stderr,
             )
             continue
@@ -67,13 +80,35 @@ def compare_residue(sqc_residue: Residue, pdb_residue: ET.Element) -> list[Discr
 
         if sqc_rama != pdb_rama:
             discrepancies.append(
-                Discrepancy(
-                    residue=sqc_residue,
-                    name="rama_torsion",
-                    sqc_value=sqc_rama,
-                    pdb_value=pdb_rama,
+                mk_discrepancy(sqc_residue, "rama", sqc_rama, pdb_rama)
+            )
+    elif "rama" in pdb_residue.attrib:
+        discrepancies.append(
+            mk_discrepancy(sqc_residue, "rama", None, pdb_residue.attrib["rama"])
+        )
+
+    if sqc_residue.sidechain_torsion is not None:
+        sqc_rota = sqc_residue.sidechain_torsion
+        pdb_rota = pdb_residue.attrib["rota"]
+
+        if pdb_rota == "OUTLIER" and sqc_rota.angle_range != "OUTLIER":
+            discrepancies.append(
+                mk_discrepancy(
+                    sqc_residue, "sidechain_torsion", sqc_rota.angle_range, pdb_rota
                 )
             )
+
+        if sqc_rota.angle_range == "Allowed":
+            if sqc_rota.rotamer != pdb_rota:
+                discrepancies.append(
+                    mk_discrepancy(
+                        sqc_residue, "sidechain_torsion", sqc_rota.rotamer, pdb_rota
+                    )
+                )
+    elif "rota" in pdb_residue.attrib:
+        discrepancies.append(
+            mk_discrepancy(sqc_residue, "sidechain_torsion", None, pdb_residue.attrib["rota"])
+        )
 
     return discrepancies
 
@@ -119,4 +154,4 @@ def main():
             print(f"INFO: Discrepancies found, writing to: {disc_filepath}")
 
             with open(disc_filepath, "w") as file:
-                file.write(repr(discrepancies))
+                file.write(pprint.pformat(discrepancies))
