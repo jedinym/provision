@@ -11,6 +11,8 @@ import sqclib
 
 from sqc.validation.model import Residue, Result
 
+COMPARE_SIDECHAIN_OUTLIERS = True
+COMPARE_RAMA_OUTLIERS = True
 
 @dataclass
 class Discrepancy:
@@ -74,41 +76,45 @@ def compare_results(sqc_results, pdb_results: ET.ElementTree) -> list[Discrepanc
 def compare_residue(sqc_residue: Residue, pdb_residue: ET.Element) -> list[Discrepancy]:
     discrepancies = []
 
-    if sqc_residue.rama_torsion is not None:
-        sqc_rama = sqc_residue.rama_torsion.angle_combo_range
-        pdb_rama = pdb_residue.attrib["rama"]
+    if COMPARE_RAMA_OUTLIERS:
+        if sqc_residue.rama_torsion is not None:
+            sqc_rama = sqc_residue.rama_torsion.angle_combo_range
+            pdb_rama = pdb_residue.attrib["rama"]
 
-        if sqc_rama != pdb_rama:
-            discrepancies.append(
-                mk_discrepancy(sqc_residue, "rama", sqc_rama, pdb_rama)
-            )
-    elif "rama" in pdb_residue.attrib:
-        discrepancies.append(
-            mk_discrepancy(sqc_residue, "rama", None, pdb_residue.attrib["rama"])
-        )
-
-    if sqc_residue.sidechain_torsion is not None:
-        sqc_rota = sqc_residue.sidechain_torsion
-        pdb_rota = pdb_residue.attrib["rota"]
-
-        if pdb_rota == "OUTLIER" and sqc_rota.angle_range != "OUTLIER":
-            discrepancies.append(
-                mk_discrepancy(
-                    sqc_residue, "sidechain_torsion", sqc_rota.angle_range, pdb_rota
+            if sqc_rama != pdb_rama:
+                discrepancies.append(
+                    mk_discrepancy(sqc_residue, "rama", sqc_rama, pdb_rama)
                 )
-            )
+            elif "rama" in pdb_residue.attrib:
+                discrepancies.append(
+                    mk_discrepancy(sqc_residue, "rama", None, pdb_residue.attrib["rama"])
+                )
 
-        if sqc_rota.angle_range == "Allowed":
-            if sqc_rota.rotamer != pdb_rota:
+    if COMPARE_SIDECHAIN_OUTLIERS:
+        if sqc_residue.sidechain_torsion is not None:
+            sqc_rota = sqc_residue.sidechain_torsion
+            pdb_rota = pdb_residue.attrib["rota"]
+
+            if pdb_rota == "OUTLIER" and sqc_rota.angle_range != "OUTLIER":
                 discrepancies.append(
                     mk_discrepancy(
-                        sqc_residue, "sidechain_torsion", sqc_rota.rotamer, pdb_rota
+                        sqc_residue, "sidechain_torsion", sqc_rota.angle_range, pdb_rota
                     )
                 )
-    elif "rota" in pdb_residue.attrib:
-        discrepancies.append(
-            mk_discrepancy(sqc_residue, "sidechain_torsion", None, pdb_residue.attrib["rota"])
-        )
+
+            if sqc_rota.angle_range == "Allowed":
+                if sqc_rota.rotamer != pdb_rota:
+                    discrepancies.append(
+                        mk_discrepancy(
+                            sqc_residue, "sidechain_torsion", sqc_rota.rotamer, pdb_rota
+                        )
+                    )
+        elif "rota" in pdb_residue.attrib:
+            discrepancies.append(
+                mk_discrepancy(
+                    sqc_residue, "sidechain_torsion", None, pdb_residue.attrib["rota"]
+                )
+            )
 
     return discrepancies
 
