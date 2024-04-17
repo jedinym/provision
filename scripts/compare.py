@@ -11,8 +11,11 @@ import sqclib
 
 from sqc.validation.model import Residue, Result
 
-COMPARE_SIDECHAIN_OUTLIERS = True
-COMPARE_RAMA_OUTLIERS = True
+COMPARE_SIDECHAIN_OUTLIERS = False
+COMPARE_RAMA_OUTLIERS = False
+COMPARE_LENGTH_OUTLIERS = True
+COMPARE_ANGLE_OUTLIERS = False
+
 
 @dataclass
 class Discrepancy:
@@ -73,6 +76,11 @@ def compare_results(sqc_results, pdb_results: ET.ElementTree) -> list[Discrepanc
     return discrepancies
 
 
+def get_worst_length_outlier(pdb_residue: ET.Element) -> ET.Element:
+    outliers = pdb_residue.findall("./bond-outlier")
+    return max(outliers, key=lambda x: abs(float(x.attrib["z"])))
+
+
 def compare_residue(sqc_residue: Residue, pdb_residue: ET.Element) -> list[Discrepancy]:
     discrepancies = []
 
@@ -87,7 +95,9 @@ def compare_residue(sqc_residue: Residue, pdb_residue: ET.Element) -> list[Discr
                 )
             elif "rama" in pdb_residue.attrib:
                 discrepancies.append(
-                    mk_discrepancy(sqc_residue, "rama", None, pdb_residue.attrib["rama"])
+                    mk_discrepancy(
+                        sqc_residue, "rama", None, pdb_residue.attrib["rama"]
+                    )
                 )
 
     if COMPARE_SIDECHAIN_OUTLIERS:
@@ -113,6 +123,59 @@ def compare_residue(sqc_residue: Residue, pdb_residue: ET.Element) -> list[Discr
             discrepancies.append(
                 mk_discrepancy(
                     sqc_residue, "sidechain_torsion", None, pdb_residue.attrib["rota"]
+                )
+            )
+
+    if COMPARE_LENGTH_OUTLIERS:
+        if sqc_residue.bond_length_outlier_count != 0:
+            assert sqc_residue.worst_bond_length is not None
+
+            if (
+                len(pdb_residue.findall("./bond-outlier"))
+                != sqc_residue.bond_length_outlier_count
+            ):
+                discrepancies.append(
+                    mk_discrepancy(
+                        sqc_residue,
+                        "bond length outlier count",
+                        sqc_residue.bond_length_outlier_count,
+                        len(pdb_residue.findall("./bond-outlier")),
+                    )
+                )
+
+            pdb_worst_outlier = get_worst_length_outlier(pdb_residue)
+            sqc_worst_outlier = sqc_residue.worst_bond_length
+
+            if (
+                pdb_worst_outlier.attrib["atom0"] == sqc_worst_outlier.first_atom
+                and pdb_worst_outlier.attrib["atom1"] == sqc_worst_outlier.second_atom
+            ):
+                if pdb_worst_outlier.attrib["z"] != str(sqc_worst_outlier.sigma):
+                    discrepancies.append(
+                        mk_discrepancy(
+                            sqc_residue,
+                            "no match in bond outlier sigma",
+                            sqc_worst_outlier,
+                            pdb_worst_outlier.attrib,
+                        )
+                    )
+            else:
+                discrepancies.append(
+                    mk_discrepancy(
+                        sqc_residue,
+                        "no matching bond outlier",
+                        sqc_worst_outlier,
+                        pdb_worst_outlier.attrib,
+                    )
+                )
+
+        elif len(pdb_residue.findall("./bond-outlier")) != 0:
+            discrepancies.append(
+                mk_discrepancy(
+                    sqc_residue,
+                    "bond outlier",
+                    sqc_residue.worst_bond_length,
+                    get_worst_length_outlier(pdb_residue),
                 )
             )
 
