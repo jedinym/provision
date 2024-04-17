@@ -109,22 +109,29 @@ class MolProbity:
         # When the residue number is 4 digits long, it gets joined with the
         # chain ID in the residue-analysis output. "X1194 TYR" instead of
         # "X 1194 TYR"
-        # FIXME: this parsing logic is broken for some residue types
-        if len(split) == 2:
+        if len(split[0]) == 5:
             chain = split[0][0]
             number = int(split[0][1:])
-            type = split[1].strip()
+            remaining_part = split[1:]
         else:
-            chain = split[0].strip()
-            number = int(split[1].strip())
-            type = split[2].strip()
+            chain = split[0]
+            number = int(split[1])
+            remaining_part = split[2:]
 
-        # if the residue is not 3 characters long (e.g. LYS, ARG),
-        # it has the altcode prepended (e.g. ALYS, BARG)
-        alt_code = None
-        if len(type) != 3:
-            alt_code = type[: len(type) - 3]
-            type = type[len(alt_code) :]
+        if len(remaining_part) == 1:
+            part = remaining_part[0]
+
+            # if the residue is not 3 characters long (e.g. LYS, ARG),
+            # it has the altcode prepended (e.g. ALYS, BARG)
+            if len(part) == 4:
+                alt_code = part[0]
+                type = part[1:]
+            else:
+                alt_code = None
+                type = part
+        else:
+            alt_code = remaining_part[0]
+            type = remaining_part[1]
 
         return Residue(number=number, chain=chain, residue_type=type, alt_code=alt_code)
 
