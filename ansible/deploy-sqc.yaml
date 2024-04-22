@@ -242,6 +242,9 @@
                           key: password
                     - name: NTHREADS
                       value: "1"
+                  resources:
+                    limits:
+                      memory: 8Gi
                   securityContext:
                     allowPrivilegeEscalation: false
                     runAsNonRoot: true
