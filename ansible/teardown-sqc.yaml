@@ -1,0 +1,39 @@
+---
+- name: Tear down SQC deployment
+  hosts: metacentrum
+  connection: local
+
+  tasks:
+    - name: Delete services
+      kubernetes.core.k8s:
+        namespace: "{{ k8s_sqc_namespace }}"
+        state: absent
+        kind: Service
+        name: "{{ item }}"
+      loop:
+        - rabbitmq
+        - minio
+        - minio-management
+        - sqc
+
+    - name: Delete deployments
+      kubernetes.core.k8s:
+        namespace: "{{ k8s_sqc_namespace }}"
+        state: absent
+        kind: Deployment
+        name: "{{ item }}"
+      loop:
+        - rabbitmq-deployment
+        - minio-deployment
+        - minio-management
+        - sqc-deployment
+
+    - name: Delete PVCs
+      kubernetes.core.k8s:
+        namespace: "{{ k8s_sqc_namespace }}"
+        state: absent
+        kind: PersistentVolumeClaim
+        name: "{{ item }}"
+      loop:
+        - rabbitmq-pvc
+        - minio-pvc

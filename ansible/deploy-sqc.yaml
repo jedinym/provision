@@ -1,5 +1,4 @@
 ---
-
 - name: Deploy SQC
   hosts: metacentrum
   connection: local

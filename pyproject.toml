@@ -20,7 +20,8 @@ compare = {call = "scripts.compare:main"}
 [tool.pdm.dev-dependencies]
 dev = [
     "kubernetes>=29.0.0",
-    "git+git@github.com:sb-ncbr/sqclib.git"
+    "git+git@github.com:sb-ncbr/sqclib.git",
+    "ansible>=9.4.0",
 ]
 [build-system]
 requires = ["pdm-backend"]
