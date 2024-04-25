@@ -2,3 +2,4 @@
 ansible_connection: local
 
 k8s_sqc_namespace: jediny-ns
+sqc_replicas: 1
