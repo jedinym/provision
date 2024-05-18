@@ -2,11 +2,15 @@
 - name: Tear down SQC deployment
   hosts: metacentrum
   connection: local
+  vars_files:
+    - vaults/sqc.yaml
 
   tasks:
     - name: Delete services
       kubernetes.core.k8s:
         namespace: "{{ k8s_sqc_namespace }}"
+        host: "{{ k8s_sqc_host }}"
+        api_key: "{{ k8s_sqc_token }}"
         state: absent
         kind: Service
         name: "{{ item }}"
@@ -19,6 +23,8 @@
     - name: Delete deployments
       kubernetes.core.k8s:
         namespace: "{{ k8s_sqc_namespace }}"
+        host: "{{ k8s_sqc_host }}"
+        api_key: "{{ k8s_sqc_token }}"
         state: absent
         kind: Deployment
         name: "{{ item }}"
@@ -31,6 +37,8 @@
     - name: Delete PVCs
       kubernetes.core.k8s:
         namespace: "{{ k8s_sqc_namespace }}"
+        host: "{{ k8s_sqc_host }}"
+        api_key: "{{ k8s_sqc_token }}"
         state: absent
         kind: PersistentVolumeClaim
         name: "{{ item }}"

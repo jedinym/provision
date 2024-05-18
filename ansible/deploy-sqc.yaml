@@ -2,11 +2,15 @@
 - name: Deploy SQC
   hosts: metacentrum
   connection: local
+  vars_files:
+    - vaults/sqc.yaml
 
   tasks:
     - name: Create a k8s namespace
       kubernetes.core.k8s:
         name: "{{ k8s_sqc_namespace }}"
+        host: "{{ k8s_sqc_host }}"
+        api_key: "{{ k8s_sqc_token }}"
         api_version: v1
         kind: Namespace
         state: present
@@ -14,6 +18,8 @@
     - name: Create Minio PVC
       kubernetes.core.k8s:
         namespace: "{{ k8s_sqc_namespace }}"
+        host: "{{ k8s_sqc_host }}"
+        api_key: "{{ k8s_sqc_token }}"
         state: present
         definition:
           kind: PersistentVolumeClaim
@@ -33,6 +39,8 @@
     - name: Create RabbitMQ PVC
       kubernetes.core.k8s:
         namespace: "{{ k8s_sqc_namespace }}"
+        host: "{{ k8s_sqc_host }}"
+        api_key: "{{ k8s_sqc_token }}"
         state: present
         definition:
           kind: PersistentVolumeClaim
@@ -52,6 +60,8 @@
     - name: Apply RabbitMQ Deployment
       kubernetes.core.k8s:
         namespace: "{{ k8s_sqc_namespace }}"
+        host: "{{ k8s_sqc_host }}"
+        api_key: "{{ k8s_sqc_token }}"
         state: present
         wait: true
         wait_condition:
@@ -107,6 +117,8 @@
     - name: Apply Minio Deployment
       kubernetes.core.k8s:
         namespace: "{{ k8s_sqc_namespace }}"
+        host: "{{ k8s_sqc_host }}"
+        api_key: "{{ k8s_sqc_token }}"
         state: present
         wait: true
         wait_condition:
@@ -190,6 +202,8 @@
     - name: Apply SQC Deployment
       kubernetes.core.k8s:
         namespace: "{{ k8s_sqc_namespace }}"
+        host: "{{ k8s_sqc_host }}"
+        api_key: "{{ k8s_sqc_token }}"
         state: present
         wait: true
         wait_timeout: 240
@@ -258,6 +272,8 @@
     - name: Apply RabbitMQ service
       kubernetes.core.k8s:
         namespace: "{{ k8s_sqc_namespace }}"
+        host: "{{ k8s_sqc_host }}"
+        api_key: "{{ k8s_sqc_token }}"
         state: present
         definition:
           apiVersion: v1
@@ -276,6 +292,8 @@
     - name: Apply Minio S3 service
       kubernetes.core.k8s:
         namespace: "{{ k8s_sqc_namespace }}"
+        host: "{{ k8s_sqc_host }}"
+        api_key: "{{ k8s_sqc_token }}"
         state: present
         definition:
           apiVersion: v1
@@ -295,6 +313,8 @@
     - name: Apply Minio management service
       kubernetes.core.k8s:
         namespace: "{{ k8s_sqc_namespace }}"
+        host: "{{ k8s_sqc_host }}"
+        api_key: "{{ k8s_sqc_token }}"
         state: present
         definition:
           apiVersion: v1
@@ -314,6 +334,8 @@
     - name: Apply Minio management ingress
       kubernetes.core.k8s:
         namespace: "{{ k8s_sqc_namespace }}"
+        host: "{{ k8s_sqc_host }}"
+        api_key: "{{ k8s_sqc_token }}"
         state: present
         definition:
           apiVersion: networking.k8s.io/v1
@@ -343,6 +365,8 @@
     - name: Apply Minio S3 ingress
       kubernetes.core.k8s:
         namespace: "{{ k8s_sqc_namespace }}"
+        host: "{{ k8s_sqc_host }}"
+        api_key: "{{ k8s_sqc_token }}"
         state: present
         definition:
           apiVersion: networking.k8s.io/v1
