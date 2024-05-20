@@ -16,6 +16,7 @@ dependencies = [
 main = {call = "sqc.main:main"}
 jsonschema = {call = "sqc.validation.model:print_jsonschema"}
 compare = {call = "scripts.compare:main"}
+throughput = {call = "scripts.throughput:main"}
 
 [tool.pdm.dev-dependencies]
 dev = [
@@ -23,6 +24,7 @@ dev = [
     "git+git@github.com:sb-ncbr/sqclib.git",
     "ansible>=9.4.0",
     "mypy>=1.10.0",
+    "onedep-api>=0.19",
 ]
 [build-system]
 requires = ["pdm-backend"]
