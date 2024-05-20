@@ -74,7 +74,7 @@
             labels:
               app: rabbitmq
           spec:
-            replicas: "{{ k8s_sqc_replicas }}"
+            replicas: 1
             selector:
               matchLabels:
                 app: rabbitmq
@@ -206,7 +206,7 @@
         api_key: "{{ k8s_sqc_token }}"
         state: present
         wait: true
-        wait_timeout: 240
+        wait_timeout: 600
         wait_condition:
           reason: NewReplicaSetAvailable
         definition:
@@ -217,7 +217,7 @@
             labels:
               app: sqc
           spec:
-            replicas: 1
+            replicas: "{{ k8s_sqc_replicas }}"
             selector:
               matchLabels:
                 app: sqc
@@ -258,7 +258,11 @@
                       value: "1"
                   resources:
                     limits:
-                      memory: 8Gi
+                      memory: "{{ k8s_sqc_limit_mem }}"
+                      cpu: "{{ k8s_sqc_limit_cpu }}"
+                    requests:
+                      memory: "{{ k8s_sqc_request_mem }}"
+                      cpu: "{{ k8s_sqc_request_cpu }}"
                   securityContext:
                     allowPrivilegeEscalation: false
                     runAsNonRoot: true
