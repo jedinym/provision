@@ -74,7 +74,7 @@
             labels:
               app: rabbitmq
           spec:
-            replicas: "{{ sqc_replicas }}"
+            replicas: "{{ k8s_sqc_replicas }}"
             selector:
               matchLabels:
                 app: rabbitmq
@@ -146,7 +146,7 @@
                       claimName: minio-pvc
                 containers:
                   - name: minio
-                    image: minio/minio:RELEASE.2024-04-18T19-09-19Z
+                    image: minio/minio:RELEASE.2024-05-10T01-41-38Z
                     ports:
                       - containerPort: 9000
                       - containerPort: 9001
@@ -228,7 +228,7 @@
               spec:
                 containers:
                 - name: sqc
-                  image: jedinym/sqc:latest
+                  image: "{{ k8s_sqc_image }}"
                   env:
                     - name: MINIO_URL
                       value: "minio:8080"

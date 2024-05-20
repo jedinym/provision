@@ -5,3 +5,4 @@ k8s_sqc_namespace: jediny-ns
 k8s_sqc_host: https://rancher.cloud.e-infra.cz/k8s/clusters/c-m-qvndqhf6
 
 k8s_sqc_replicas: 1
+k8s_sqc_image: jedinym/sqc:latest
