@@ -33,7 +33,7 @@
               - ReadWriteMany
             resources:
               requests:
-                storage: 2Gi
+                storage: 32Gi
             storageClassName: nfs-csi
 
     - name: Create RabbitMQ PVC
@@ -259,7 +259,7 @@
                   resources:
                     limits:
                       memory: "{{ k8s_sqc_limit_mem }}"
-                      cpu: "{{ k8s_sqc_limit_cpu }}"
+                      # cpu: "{{ k8s_sqc_limit_cpu }}"
                     requests:
                       memory: "{{ k8s_sqc_request_mem }}"
                       cpu: "{{ k8s_sqc_request_cpu }}"

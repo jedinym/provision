@@ -7,13 +7,13 @@ k8s_sqc_namespace: jediny-ns
 # MetaCentrum Kubernetes cluster
 k8s_sqc_host: https://rancher.cloud.e-infra.cz/k8s/clusters/c-m-qvndqhf6
 
-k8s_sqc_replicas: 30
+k8s_sqc_replicas: 20
 
 # image to use for the SQC validation service
 k8s_sqc_image: jedinym/sqc:latest
 
 # cpu/mem requests and limits
-k8s_sqc_limit_mem: 2Gi
-k8s_sqc_request_mem: 1Gi
+k8s_sqc_limit_mem: 3Gi
+k8s_sqc_request_mem: 1.5Gi
 k8s_sqc_limit_cpu: 1.0
-k8s_sqc_request_cpu: 0.5
+k8s_sqc_request_cpu: 0.9
