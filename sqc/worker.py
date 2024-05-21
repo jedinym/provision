@@ -24,7 +24,7 @@ class Worker(ConsumerMixin):
         self.repo = repo
 
     def get_consumers(self, consumer, _):
-        return [consumer(queues=[self.queue], callbacks=[self.on_message])]
+        return [consumer(queues=[self.queue], callbacks=[self.on_message], prefetch_count=1)]
 
     def on_message(self, body: dict[str, Any], message) -> None:
         message.ack()
