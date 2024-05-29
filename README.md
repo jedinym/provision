@@ -52,3 +52,7 @@ $ ansible-playbook --inventory ansible/inventory/ ansible/teardown-sqc.yaml --as
 ### Configuration
 To edit SQC's deploy configuration, see [the metacentrum inventory
 file](ansible/inventory/host_vars/metacentrum.yaml).
+
+## Management
+To access the MinIO management server, visit [MinIO
+management](https://sqc-management.dyn.cloud.e-infra.cz) in a browser.
